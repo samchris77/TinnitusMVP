@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Color Palette</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block">
+<style>
+  /* ============ Page chrome (always light) ============ */
+  :root {
+    --p-bg: #ECE7DE;
+    --p-surface: #FFFFFF;
+    --p-ink: #1A2E2C;
+    --p-ink-2: #4A5C5A;
+    --p-line: #E5DED2;
+    --p-teal: #2D5F5D;
+    --p-teal-soft: #E8F0EE;
+    --p-bad: #A33A2E;
+    --p-bad-soft: #F7DDD8;
+    --p-shadow: 0 1px 2px rgba(26, 46, 44, .04), 0 4px 16px rgba(26, 46, 44, .06);
+    --bezel: #1F2725;
+    --font: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', Roboto, sans-serif;
+    color-scheme: light;
+  }
+
+  /* ============ App themes, one per phone ============ */
+  .th-now, .th-light {
+    --bg: #F5F1EA; --surface: #FFFFFF; --ink: #1A2E2C; --ink-2: #4A5C5A; --muted: #8B9694;
+    --line: #E5DED2; --track: #E2DCD1; --teal: #2D5F5D; --teal-soft: #E8F0EE; --on-teal: #FFFFFF;
+    --coral: #D67C5C; --on-coral: #FFFFFF; --warn: #C44536;
+    --s1: rgba(45, 95, 93, .14); --s2: rgba(45, 95, 93, .40); --s3: #2D5F5D; --on-s3: #FFFFFF;
+    --switch-off: #D9D3C8; --thumb: #FFFFFF; --thumb-on: #FFFFFF; --knob: #FFFFFF;
+    --press: rgba(26, 46, 44, .06); --scrim: rgba(26, 46, 44, .4);
+    --shadow: 0 1px 2px rgba(26, 46, 44, .04), 0 4px 16px rgba(26, 46, 44, .06);
+    --player-shadow: 0 -4px 24px rgba(26, 46, 44, .08);
+    --play-glow: 0 6px 18px rgba(214, 124, 92, .35);
+    --gesture: rgba(26, 46, 44, .35); --handle: rgba(26, 46, 44, .2); --ring: rgba(26, 46, 44, .14);
+    --area: .10;
+  }
+  .th-light { --muted: #748280; --s1: #D3E2E0; --s2: #8DB1AD; }
+  .th-dark {
+    --bg: #111817; --surface: #1A2422; --ink: #E7EEEC; --ink-2: #A9B8B5; --muted: #7C8B88;
+    --line: #2A3634; --track: #34423F; --teal: #7DB3AD; --teal-soft: #1E3533; --on-teal: #0F1716;
+    --coral: #E08F72; --on-coral: #111817; --warn: #E8806F;
+    --s1: #24403D; --s2: #3D6E6A; --s3: #7DB3AD; --on-s3: #111817;
+    --switch-off: #34423F; --thumb: #A9B8B5; --thumb-on: #0F1716; --knob: #E7EEEC;
+    --press: rgba(255, 255, 255, .06); --scrim: rgba(0, 0, 0, .55);
+    --shadow: none; --player-shadow: none;
+    --play-glow: 0 6px 18px rgba(224, 143, 114, .22);
+    --gesture: rgba(231, 238, 236, .45); --handle: rgba(231, 238, 236, .25); --ring: rgba(231, 238, 236, .2);
+    --area: .16;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--p-bg); color: var(--p-ink); line-height: 1.5; -webkit-font-smoothing: antialiased; word-break: keep-all; }
+  button { font: inherit; color: inherit; background: none; border: 0; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; background: rgba(26, 46, 44, .06); padding: 1px 5px; border-radius: 4px; }
+  .mi { font-family: 'Material Icons'; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; direction: ltr; font-feature-settings: 'liga'; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; user-select: none; flex: none; }
+  .mi.sm { font-size: 18px; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 56px 24px 120px; }
+  .eyebrow { font-size: 13px; font-weight: 600; color: var(--p-ink-2); letter-spacing: .2px; }
+  .page-h h1 { font-size: 40px; line-height: 1.15; letter-spacing: -.8px; margin: 8px 0 12px; }
+  .lede { font-size: 18px; color: var(--p-ink-2); max-width: 820px; }
+  .lede b { color: var(--p-ink); }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .facts span { background: var(--p-surface); border-radius: 100px; padding: 6px 16px; font-size: 14px; color: var(--p-ink-2); }
+  .facts b { color: var(--p-teal); margin-right: 4px; }
+  .wrap > section { margin-top: 80px; }
+  .wrap > section > h2 { font-size: 26px; letter-spacing: -.4px; line-height: 1.25; }
+  .wrap > section > .sub { color: var(--p-ink-2); margin: 8px 0 32px; max-width: 820px; }
+  .rowh { font-size: 15px; font-weight: 700; margin: 48px 0 16px; color: var(--p-ink-2); }
+  .rowh:first-of-type { margin-top: 0; }
+
+  .row3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(376px, 100%), 1fr)); gap: 40px 24px; justify-items: center; }
+  .frame { width: 100%; max-width: 376px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .frame figcaption { width: 100%; display: flex; align-items: baseline; gap: 8px; }
+  .cap-t { font-size: 17px; font-weight: 700; }
+  .cap-s { font-size: 14px; color: var(--p-ink-2); }
+
+  .panel { background: var(--p-surface); border-radius: 16px; padding: 20px 24px; box-shadow: var(--p-shadow); }
+  .panel h3 { font-size: 17px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .panel .why { color: var(--p-ink-2); font-size: 14px; margin-bottom: 12px; }
+  .panel ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+  .panel li span { color: var(--p-ink-2); }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .chip { width: 28px; height: 28px; border-radius: 8px; flex: none; box-shadow: inset 0 0 0 1px rgba(26, 46, 44, .12); }
+
+  /* Token table */
+  .table-wrap { overflow-x: auto; background: var(--p-surface); border-radius: 16px; box-shadow: var(--p-shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 860px; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; vertical-align: middle; }
+  thead th { font-size: 13px; color: var(--p-ink-2); font-weight: 600; border-bottom: 1px solid var(--p-line); }
+  tbody tr + tr td { border-top: 1px solid var(--p-line); }
+  td.tok b { display: block; font-size: 15px; }
+  td.tok span { color: var(--p-ink-2); font-size: 13px; }
+  .sw { display: flex; align-items: center; gap: 10px; }
+  .sw .chip { width: 32px; height: 32px; }
+  .sw code { background: none; padding: 0; font-size: 13px; }
+  .sw .cr { display: block; font-size: 12px; color: var(--p-ink-2); font-variant-numeric: tabular-nums; }
+  .sw .cr.bad { color: var(--p-bad); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 100px; margin-left: 4px; vertical-align: 1px; }
+  .tag.new { background: var(--p-teal-soft); color: var(--p-teal); }
+  .tag.bad { background: var(--p-bad-soft); color: var(--p-bad); }
+
+  /* Calendar shade strips */
+  .strips { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .strip { border-radius: 16px; padding: 20px; }
+  .strip h3 { font-size: 15px; margin-bottom: 14px; }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .step { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; text-align: center; }
+  .step .sq { width: 100%; aspect-ratio: 1; max-width: 56px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
+  .step .cr { font-variant-numeric: tabular-nums; }
+
+  .calls { counter-reset: c; list-style: none; display: flex; flex-direction: column; gap: 12px; max-width: 900px; }
+  .calls li { counter-increment: c; background: var(--p-surface); border-radius: 16px; padding: 16px 20px 16px 56px; position: relative; box-shadow: var(--p-shadow); }
+  .calls li::before { content: counter(c); position: absolute; left: 20px; top: 16px; width: 24px; height: 24px; border-radius: 50%; background: var(--p-teal-soft); color: var(--p-teal); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  .calls b { display: block; }
+  .calls span { color: var(--p-ink-2); font-size: 15px; }
+  .calls .def { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--p-teal); }
+  .plays { display: flex; gap: 24px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .plays figure { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; color: var(--p-ink-2); }
+  .plays .play { position: static; }
+  .foot { margin-top: 40px; font-size: 14px; color: var(--p-ink-2); max-width: 860px; }
+
+  /* ============ Phone ============ */
+  .phone { width: 360px; height: 780px; box-sizing: content-box; border: 8px solid var(--bezel); border-radius: 44px; background: var(--bezel); position: relative; overflow: hidden; flex: none; box-shadow: 0 24px 60px rgba(26, 46, 44, .18); zoom: var(--z, 1); }
+  .viewport { position: absolute; inset: 0; border-radius: 36px; overflow: hidden; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; pointer-events: none; }
+
+  .sb { height: 32px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 13px; font-weight: 600; }
+  .sb .mi { font-size: 16px; margin-left: 4px; }
+  .appbar { height: 56px; flex: none; display: flex; align-items: center; padding: 0 4px; }
+  .appbar h2 { font-size: 16px; line-height: 24px; font-weight: 600; flex: 1; padding-left: 4px; }
+  .appbar-lg h2 { font-size: 22px; line-height: 30px; font-weight: 700; letter-spacing: -.3px; padding-left: 12px; }
+  .iconbtn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); flex: none; }
+  .iconbtn.off { color: var(--muted); }
+  .content { flex: 1; min-height: 0; overflow: hidden; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 16px; }
+  .content > * { flex-shrink: 0; }
+  .content.main { gap: 20px; }
+  .gesture { position: absolute; left: 50%; bottom: 8px; width: 108px; height: 4px; margin-left: -54px; border-radius: 2px; background: var(--gesture); z-index: 20; }
+
+  .t-display { font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -.5px; }
+  .t-display .unit { font-size: 16px; font-weight: 600; color: var(--ink-2); letter-spacing: 0; }
+  .t-title { font-size: 22px; line-height: 30px; font-weight: 700; letter-spacing: -.3px; }
+  .t-body { font-size: 16px; line-height: 24px; }
+  .t-label { font-size: 14px; line-height: 20px; font-weight: 600; }
+  .t-caption { font-size: 13px; line-height: 18px; }
+  .b { font-weight: 600; }
+  .ink2 { color: var(--ink-2); }
+  .teal { color: var(--teal); }
+  .muted { color: var(--muted); }
+  .head { display: flex; flex-direction: column; gap: 4px; }
+
+  .btn-inline { height: 48px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--teal); flex: none; }
+  .play { --size: 72px; width: var(--size); height: var(--size); border-radius: 50%; background: var(--coral); color: var(--on-coral); display: grid; place-items: center; flex: none; position: relative; box-shadow: var(--play-glow); }
+  .play .mi { font-size: calc(var(--size) * .5); }
+  .play.on::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--coral); opacity: .3; }
+
+  .card { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); padding: 16px; }
+  .me2 { padding: 0; overflow: hidden; }
+  .me-top { display: flex; align-items: center; gap: 8px; padding: 12px 8px 12px 16px; min-height: 72px; }
+  .me-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; }
+  .me-row2 { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 12px 10px 16px; box-shadow: inset 0 1px 0 var(--line); }
+  .me-row2 > .mi { color: var(--muted); }
+
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .glabel { padding-left: 4px; }
+  .glabel:not(:first-child) { margin-top: 8px; }
+  .tiles { display: grid; gap: 8px; }
+  .tiles-3 { grid-template-columns: repeat(3, 1fr); }
+  .tiles-4 { grid-template-columns: repeat(4, 1fr); }
+  .tile { height: 72px; border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 14px; line-height: 20px; font-weight: 600; }
+  .tile .mi { color: var(--ink-2); }
+  .tile.sel { background: var(--teal-soft); box-shadow: inset 0 0 0 2px var(--teal); color: var(--teal); }
+  .tile.sel .mi { color: var(--teal); }
+  .swatch { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--ring); display: inline-block; flex: none; }
+
+  .switch-row { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 16px; text-align: left; width: 100%; }
+  .sw-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .switch { width: 52px; height: 32px; border-radius: 16px; background: var(--switch-off); position: relative; flex: none; }
+  .switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--thumb); box-shadow: 0 1px 3px rgba(0, 0, 0, .2); }
+  .switch.on { background: var(--teal); }
+  .switch.on::after { transform: translateX(20px); background: var(--thumb-on); }
+
+  .player { flex: none; background: var(--surface); border-radius: 16px 16px 0 0; box-shadow: var(--player-shadow); padding: 4px 16px 28px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .vol { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .vol > .mi { font-size: 20px; color: var(--muted); }
+  .range-wrap { position: relative; flex: 1; height: 48px; }
+  .rtrack { position: absolute; left: 12px; right: 12px; top: 21px; height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--teal) 0, var(--teal) var(--p), var(--track) var(--p), var(--track) 100%); }
+  .rthumb { position: absolute; top: 12px; left: calc(12px + (100% - 24px) * var(--t)); width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; background: var(--knob); border: 2px solid var(--teal); box-shadow: 0 1px 4px rgba(0, 0, 0, .25); }
+  .tick { position: absolute; top: 18px; left: calc(12px + (100% - 24px) * var(--t)); width: 2px; height: 12px; margin-left: -1px; background: var(--ink-2); border-radius: 1px; }
+  .tick-label { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+  .play-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+  .timer-pill, .pill-spacer { width: 96px; height: 48px; flex: none; }
+  .timer-pill { border-radius: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .timer-pill .mi { font-size: 20px; color: var(--muted); }
+  .timer-pill.on { background: var(--teal-soft); color: var(--teal); box-shadow: inset 0 0 0 2px var(--teal); }
+  .timer-pill.on .mi { color: var(--teal); }
+  .hint-row { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 8px; }
+  .hint-row .mi { font-size: 18px; }
+  .hint-row .mi.muted { font-size: 20px; }
+
+  /* Calendar */
+  .cal-card { padding: 8px 8px 16px 16px; }
+  .cal-h { display: flex; align-items: center; min-height: 56px; margin-bottom: 4px; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-right: 8px; }
+  .cal .wd { text-align: center; font-size: 13px; line-height: 20px; color: var(--ink-2); padding-bottom: 4px; }
+  .cell { aspect-ratio: 1; border-radius: 8px; position: relative; display: grid; place-items: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .cell.l1 { background: var(--s1); }
+  .cell.l2 { background: var(--s2); }
+  .cell.l3 { background: var(--s3); color: var(--on-s3); }
+  .cell.future { color: var(--muted); }
+  .cell.today { outline: 2px solid var(--ink); outline-offset: 1px; font-weight: 700; }
+  .cdot { position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--ink); }
+  .cell.l3 .cdot { background: var(--on-s3); }
+  .legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 6px; margin: 14px 8px 0 0; }
+  .legend > span { display: inline-flex; align-items: center; gap: 5px; }
+  .lg-sw { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .lg-sw.l1 { background: var(--s1); }
+  .lg-sw.l2 { background: var(--s2); }
+  .lg-sw.l3 { background: var(--s3); }
+  .legend .cdot { position: static; margin: 0 3px; }
+
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .delta { display: flex; align-items: center; gap: 4px; }
+  .delta .mi { color: var(--ink-2); }
+  .chart-card { padding: 16px 16px 12px; }
+  .chart-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+  .chart { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart .axis { font-size: 13px; fill: var(--ink-2); font-family: var(--font); }
+  .chart .end { font-size: 13px; font-weight: 600; fill: var(--ink); font-family: var(--font); }
+  .chart .area { fill: var(--teal); fill-opacity: var(--area); }
+  .chart .ln { fill: none; stroke: var(--teal); stroke-width: 2; stroke-linejoin: round; }
+  .chart .pt { fill: var(--teal); stroke: var(--surface); stroke-width: 2; }
+
+  /* Sheet */
+  .scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 5; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); border-radius: 16px 16px 0 0; padding: 8px 16px 40px; display: flex; flex-direction: column; gap: 16px; }
+  .handle { width: 32px; height: 4px; border-radius: 2px; background: var(--handle); align-self: center; }
+  .sheet-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-right: -12px; }
+  .sheet-h .head { padding-top: 8px; }
+  .list { padding: 0; overflow: hidden; }
+  .drow { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 16px; }
+  .list .drow + .drow { box-shadow: inset 0 1px 0 var(--line); }
+  .dvis { width: 24px; height: 24px; display: grid; place-items: center; color: var(--ink-2); flex: none; }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 32px 16px 80px; }
+    .page-h h1 { font-size: 32px; }
+    .lede { font-size: 16px; }
+    .wrap > section { margin-top: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-h">
+    <p class="eyebrow">TinnitusMVP · 색상 제안 · 2026-10-22</p>
+    <h1>Color palette</h1>
+    <p class="lede">Keep the cream, deep teal and single coral accent. <b>Four changes:</b> a darker muted gray that meets 3 : 1 on the cream background too, solid calendar shades with even steps, <b>a dark theme for bedtime</b>, and one job per color. Contrast figures on this page are calculated from the colors themselves.</p>
+    <div class="facts">
+      <span><b>2</b>light colors changed</span>
+      <span><b>1</b>new dark theme</span>
+      <span><b>0</b>new accent colors</span>
+    </div>
+  </header>
+
+  <section id="compare">
+    <h2>Side by side</h2>
+    <p class="sub">The same three screens in today's colors, the proposed light theme and the proposed dark theme. The light changes are small on purpose: look at the chevrons, the 혼합점 tick and the calendar shades.</p>
+    <div id="rows"></div>
+  </section>
+
+  <section id="tokens">
+    <h2>Tokens</h2>
+    <p class="sub">Each color's contrast is measured against what it sits on. Red figures miss the WCAG minimum: 4.5 : 1 for text, 3 : 1 for icons and large shapes. Calendar steps show the contrast with the step below; there is no pass mark for those, but bigger steps are easier to tell apart.</p>
+    <div class="table-wrap"><table id="token-table"></table></div>
+  </section>
+
+  <section id="shades">
+    <h2>Calendar shades</h2>
+    <p class="sub">Today's shades are teal at 14 % and 40 % opacity. The lightest is almost the colour of the card. The proposal uses solid colours with steps of similar size. In the dark theme, brighter means more listening.</p>
+    <div class="strips" id="strips"></div>
+  </section>
+
+  <section id="jobs">
+    <h2>One job per color</h2>
+    <p class="sub">A colour that does one thing everywhere can be read without thinking.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3><span class="chip" style="background:#D67C5C"></span>Coral: play only</h3>
+        <p class="why">The one thing to press on the main screen.</p>
+        <ul>
+          <li>The play button and its ring while playing</li>
+          <li>Never for links, chips or highlights <span>— two coral things and play stops standing out</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="chip" style="background:#C44536"></span>Red: red flags only</h3>
+        <p class="why">Reserved for "see a doctor".</p>
+        <ul>
+          <li>The red-flag screen and its referral button</li>
+          <li>Never for a rising score, a missed check-in or a day without listening <span>— those are information, not alarms</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="chip" style="background:#2D5F5D"></span>Teal: selected, on, progress</h3>
+        <p class="why">Everything else that needs colour.</p>
+        <ul>
+          <li>Selected tiles, switches that are on, sliders, the primary button</li>
+          <li>The calendar shades and the score chart</li>
+          <li>Text stays in the two ink colours, never teal, except tappable words like 다시 찾기</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="decide">
+    <h2>Your calls</h2>
+    <p class="sub">The defaults are what the screens show.</p>
+    <ol class="calls">
+      <li><b>How dark mode turns on</b><span>Following the phone's dark mode needs no setting and matches what people expect. A switch in 앱 정보 could come later if anyone asks.</span><br><span class="def">Default: follow the phone</span></li>
+      <li><b>Darker coral for the play button</b><span>White on today's coral is 3.0 : 1, just at the minimum for a large icon. <code>#C96F50</code> gives 3.6 : 1 and looks almost the same.</span>
+        <div class="plays th-light" id="plays"></div>
+        <span class="def">Default: keep today's coral; the icon is large</span></li>
+      <li><b>Dark calendar direction</b><span>On dark, brighter squares mean more listening, the way lit-up days read at night. The other choice, darker = more, would make long days disappear into the background.</span><br><span class="def">Default: brighter = more</span></li>
+    </ol>
+    <div class="cols" style="margin-top:32px">
+      <div class="panel">
+        <h3>What it takes to build</h3>
+        <p class="why">About half a day.</p>
+        <ul>
+          <li><code>ui/theme/Theme.kt</code>: a light and a dark <code>Palette</code>, chosen with <code>isSystemInDarkTheme()</code></li>
+          <li>Two light values change: <code>Muted</code> and the calendar shades</li>
+          <li><code>enableEdgeToEdge</code> picks light or dark status-bar icons to match</li>
+          <li><code>values-night/themes.xml</code> for the splash background, so the app doesn't flash cream at night</li>
+          <li>Hard-coded <code>Color.White</code> on teal and coral becomes <code>onTeal</code> / <code>onCoral</code></li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot">Dark colours are a proposal checked by calculation, not on a device. Screens vary a lot in the dark; check on a phone at low brightness before release.</p>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Theme values for the table (solid equivalents for translucent shades) ----------
+  const THEMES = {
+    now:   { label: '지금', sub: 'Today\'s colours' },
+    light: { label: '제안 · 밝게', sub: 'Proposed light' },
+    dark:  { label: '제안 · 어둡게', sub: 'Proposed dark' },
+  };
+  const V = {
+    now: { bg: '#F5F1EA', surface: '#FFFFFF', ink: '#1A2E2C', 'ink-2': '#4A5C5A', muted: '#8B9694', teal: '#2D5F5D', 'on-teal': '#FFFFFF', coral: '#D67C5C', 'on-coral': '#FFFFFF', warn: '#C44536', s1: '#E2E9E8', s2: '#ABBFBE', s3: '#2D5F5D' },
+    light: { bg: '#F5F1EA', surface: '#FFFFFF', ink: '#1A2E2C', 'ink-2': '#4A5C5A', muted: '#748280', teal: '#2D5F5D', 'on-teal': '#FFFFFF', coral: '#D67C5C', 'on-coral': '#FFFFFF', warn: '#C44536', s1: '#D3E2E0', s2: '#8DB1AD', s3: '#2D5F5D' },
+    dark: { bg: '#111817', surface: '#1A2422', ink: '#E7EEEC', 'ink-2': '#A9B8B5', muted: '#7C8B88', teal: '#7DB3AD', 'on-teal': '#0F1716', coral: '#E08F72', 'on-coral': '#111817', warn: '#E8806F', s1: '#24403D', s2: '#3D6E6A', s3: '#7DB3AD' },
+  };
+  const TOKENS = [
+    { k: 'bg', name: '배경', role: 'Screen background' },
+    { k: 'surface', name: '카드', role: 'Cards, sheets, player' },
+    { k: 'ink', name: '글자', role: 'Main text', vs: 'bg', min: 4.5 },
+    { k: 'ink-2', name: '보조 글자', role: 'Captions and labels', vs: 'surface', min: 4.5 },
+    { k: 'muted', name: '흐린 색', role: 'Chevrons, small icons, future days. Never text. On cards and on the background.', vs: ['surface', 'bg'], min: 3 },
+    { k: 'teal', name: '틸', role: 'Selected, on, progress', vs: 'surface', min: 3 },
+    { k: 'on-teal', name: '틸 위 글자', role: 'Text and icons on teal', vs: 'teal', min: 4.5 },
+    { k: 'coral', name: '코랄', role: 'Play button only (icon on it)', vs: 'on-coral', min: 3 },
+    { k: 'warn', name: '경고', role: 'Red-flag screen only', vs: 'surface', min: 4.5 },
+    { k: 's1', name: '달력 1', role: 'Under 30 min · vs card', vs: 'surface' },
+    { k: 's2', name: '달력 2', role: '30 min–2 h · vs step 1', vs: 's1' },
+    { k: 's3', name: '달력 3', role: '2 h or more · vs step 2', vs: 's2' },
+  ];
+
+  const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const lum = h => { const n = parseInt(h.slice(1), 16); return 0.2126 * lin(n >> 16 & 255) + 0.7152 * lin(n >> 8 & 255) + 0.0722 * lin(n & 255); };
+  const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+
+  // ---------- Token table ----------
+  const cellHtml = (theme, t) => {
+    const v = V[theme][t.k];
+    const changed = theme === 'light' && v !== V.now[t.k];
+    let cr = '';
+    if (t.vs) {
+      const against = [].concat(t.vs);
+      cr = against.map(k => {
+        const c = contrast(v, V[theme][k]);
+        const bad = t.min && c < t.min;
+        const where = against.length > 1 ? (k === 'bg' ? ' 배경' : ' 카드') : '';
+        return `<span class="cr ${bad ? 'bad' : ''}">${c.toFixed(1)} : 1${where}${bad ? ' · 부족' : ''}</span>`;
+      }).join('');
+    }
+    const note = theme === 'now' && (t.k === 's1' || t.k === 's2') ? ' <span class="tag bad">반투명</span>' : '';
+    return `<td><div class="sw"><span class="chip" style="background:${v}"></span><span><code>${v}</code>${changed ? '<span class="tag new">바뀜</span>' : ''}${note}${cr}</span></div></td>`;
+  };
+  document.getElementById('token-table').innerHTML = `
+    <thead><tr><th>Token</th>${Object.values(THEMES).map(t => `<th>${t.label}</th>`).join('')}</tr></thead>
+    <tbody>${TOKENS.map(t => `<tr><td class="tok"><b>${t.name}</b><span>${t.role}</span></td>${Object.keys(THEMES).map(th => cellHtml(th, t)).join('')}</tr>`).join('')}</tbody>`;
+
+  // ---------- Shade strips ----------
+  document.getElementById('strips').innerHTML = Object.keys(THEMES).map(th => {
+    const v = V[th];
+    const steps = [['없음', v.surface, null], ['30분 미만', v.s1, v.surface], ['30분–2시간', v.s2, v.s1], ['2시간 이상', v.s3, v.s2]];
+    const ink = th === 'dark' ? '#E7EEEC' : '#1A2E2C';
+    const onS3 = th === 'dark' ? '#111817' : '#FFFFFF';
+    return `<div class="strip" style="background:${v.surface};color:${ink};box-shadow:var(--p-shadow)">
+      <h3>${THEMES[th].label}</h3>
+      <div class="steps">${steps.map(([l, c, prev], i) => `
+        <div class="step"><span class="sq" style="background:${c};color:${i === 3 ? onS3 : ink};${i === 0 ? `box-shadow:inset 0 0 0 1px ${th === 'dark' ? '#2A3634' : '#E5DED2'}` : ''}">${14 + i}</span>
+        <span style="color:${th === 'dark' ? '#A9B8B5' : '#4A5C5A'}">${l}</span>
+        <span class="cr" style="color:${th === 'dark' ? '#A9B8B5' : '#4A5C5A'}">${prev ? contrast(c, prev).toFixed(2) + ' : 1' : '&nbsp;'}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // ---------- Screens ----------
+  const mi = (name, cls = '') => `<span class="mi ${cls}" aria-hidden="true">${name}</span>`;
+  const statusBar = () => `<div class="sb"><span>9:41</span><span>${mi('signal_cellular_alt')}${mi('wifi')}${mi('battery_full')}</span></div>`;
+  const SOUNDS = [
+    { id: 'white', name: '화이트', group: 'noise', swatch: '#FFFFFF' },
+    { id: 'pink', name: '핑크', group: 'noise', swatch: '#EBB7B1' },
+    { id: 'brown', name: '브라운', group: 'noise', swatch: '#8C664D' },
+    { id: 'rain', name: '빗소리', group: 'nature', icon: 'umbrella' },
+    { id: 'waves', name: '파도', group: 'nature', icon: 'waves' },
+    { id: 'brook', name: '시냇물', group: 'nature', icon: 'water_drop' },
+    { id: 'fire', name: '모닥불', group: 'nature', icon: 'local_fire_department' },
+  ];
+  const tile = x => `<div class="tile ${x.id === 'rain' ? 'sel' : ''}">${x.group === 'noise' ? `<span class="swatch" style="background:${x.swatch}"></span>` : mi(x.icon)}<span>${x.name}</span></div>`;
+
+  function scrMain() {
+    return `<header class="appbar appbar-lg"><h2>이명 사운드</h2><span class="iconbtn">${mi('calendar_month')}</span><span class="iconbtn">${mi('info')}</span></header>
+    <div class="content main">
+      <div class="card me2">
+        <div class="me-top"><div class="me-text"><span class="t-caption ink2">내 이명</span><span class="t-body b">4,240 Hz · 크기 28</span></div><span class="btn-inline" style="display:grid;place-items:center">다시 찾기</span></div>
+        <div class="me-row2"><span class="me-text"><span class="t-label">이명 점수 48</span><span class="t-caption ink2">지난주보다 8점 낮아요</span></span><span class="t-label teal">내 기록</span>${mi('chevron_right')}</div>
+      </div>
+      <div class="group">
+        <div class="t-caption ink2 glabel">노이즈</div>
+        <div class="tiles tiles-3">${SOUNDS.filter(x => x.group === 'noise').map(tile).join('')}</div>
+        <div class="t-caption ink2 glabel">자연음</div>
+        <div class="tiles tiles-4">${SOUNDS.filter(x => x.group === 'nature').map(tile).join('')}</div>
+      </div>
+      <div class="card switch-row"><span class="sw-text"><span class="t-body b">이명 음 빼기</span><span class="t-caption ink2">4,240 Hz 주변을 비우고 들려줘요</span></span><span class="switch on"></span></div>
+    </div>
+    <div class="player">
+      <div class="vol">${mi('volume_down')}
+        <div class="range-wrap"><span class="rtrack" style="--p:${6 / 15 * 100}%"></span><span class="tick" style="--t:${7 / 15}"><span class="tick-label t-caption ink2">혼합점</span></span><span class="rthumb" style="--t:${6 / 15}"></span></div>
+        ${mi('volume_up')}</div>
+      <div class="play-row"><span class="timer-pill on">${mi('bedtime')}<span>28분</span></span><span class="play on">${mi('pause')}</span><span class="pill-spacer"></span></div>
+      <div class="hint-row">${mi('check_circle', 'teal sm')}<span class="t-caption ink2">권장 볼륨이에요</span>${mi('chevron_right', 'muted')}</div>
+    </div>`;
+  }
+
+  // Listening minutes for October, same as the v1.2 calendar page; today (21) has 35 minutes.
+  const MIN = { 1: 70, 2: 65, 4: 150, 5: 30, 6: 55, 7: 85, 9: 90, 10: 220, 11: 135, 12: 20, 14: 95, 15: 45, 16: 75, 17: 240, 18: 95, 20: 50, 21: 35 };
+  const CI = [7, 14, 21];
+  const lvl = m => !m ? 0 : m < 30 ? 1 : m < 120 ? 2 : 3;
+  function calendarCard() {
+    let cells = '<span></span><span></span><span></span><span></span>';
+    for (let d = 1; d <= 31; d++) {
+      cells += `<span class="cell l${d > 21 ? 0 : lvl(MIN[d])} ${d === 21 ? 'today' : ''} ${d > 21 ? 'future' : ''}">${d}${CI.includes(d) ? '<i class="cdot"></i>' : ''}</span>`;
+    }
+    return `<div class="card cal-card">
+      <div class="cal-h"><div class="me-text"><span class="t-body b">2026년 10월</span><span class="t-caption ink2">17일 들었어요 · 총 25시간 55분</span></div>
+        <span class="iconbtn">${mi('chevron_left')}</span><span class="iconbtn off" style="opacity:.5">${mi('chevron_right')}</span></div>
+      <div class="cal">${[...'일월화수목금토'].map(w => `<span class="wd">${w}</span>`).join('')}${cells}</div>
+      <div class="legend t-caption ink2"><span><i class="lg-sw l1"></i>30분 미만</span><span><i class="lg-sw l2"></i>30분–2시간</span><span><i class="lg-sw l3"></i>2시간 이상</span><span><i class="cdot"></i>체크인</span></div>
+    </div>`;
+  }
+  function chart() {
+    const pts = [[30, 54.2], [107.3, 64.5], [184.7, 68.3], [262, 78.6]];   // scores 67, 59, 56, 48
+    const line = 'M' + pts.map(p => p.join(',')).join(' L');
+    return `<div class="card chart-card"><div class="chart-head"><span class="t-label">이명 점수</span><span class="t-caption ink2">주 1회 · 질문 3개 (K-TMI)</span></div>
+      <svg class="chart" viewBox="0 0 296 168">
+        ${[[0, 140], [50, 76], [100, 12]].map(([v, y]) => `<line class="grid" x1="30" x2="270" y1="${y}" y2="${y}"/><text class="axis" x="22" y="${y + 4}" text-anchor="end">${v}</text>`).join('')}
+        <path class="area" d="M30,140 L${pts.map(p => p.join(',')).join(' L')} L262,140 Z"/><path class="ln" d="${line}"/>
+        ${pts.map(p => `<circle class="pt" cx="${p[0]}" cy="${p[1]}" r="5"/>`).join('')}
+        <text class="end" x="272" y="82.6">48</text>
+        ${['9/30', '10/7', '10/14', '10/21'].map((l, i) => `<text class="axis" x="${pts[i][0]}" y="162" text-anchor="middle">${l}</text>`).join('')}
+      </svg></div>`;
+  }
+  function scrRecords(sheet) {
+    return `<header class="appbar"><span class="iconbtn">${mi('arrow_back')}</span><h2>내 기록</h2></header>
+    <div class="content">
+      ${calendarCard()}
+      <div class="card stat"><span class="t-caption ink2">이번 주 이명 점수</span><span class="t-display">48<span class="unit"> 점</span></span>
+        <span class="delta t-label ink2">${mi('arrow_downward', 'sm')}첫 기록보다 19점 낮아요</span><span class="t-caption ink2">0–100점 · 낮을수록 이명이 덜 느껴졌다는 뜻이에요</span></div>
+      ${chart()}
+    </div>
+    ${sheet ? `<div class="scrim"></div>
+    <div class="sheet"><div class="handle"></div>
+      <div class="sheet-h"><div class="head"><h2 class="t-title">10월 14일 수요일</h2><p class="t-body ink2">1시간 35분 들었어요</p></div><span class="iconbtn">${mi('close')}</span></div>
+      <div class="card list">
+        <div class="drow"><span class="dvis">${mi('umbrella')}</span><span class="me-text"><span class="t-body">빗소리</span><span class="t-caption ink2">이명 음 빼기 켜짐</span></span><span class="t-label">1시간 5분</span></div>
+        <div class="drow"><span class="dvis"><span class="swatch" style="background:#EBB7B1"></span></span><span class="me-text"><span class="t-body">핑크 노이즈</span><span class="t-caption ink2">이명 음 빼기 켜짐</span></span><span class="t-label">30분</span></div>
+      </div>
+      <div class="card drow"><span class="dvis">${mi('event_available', 'teal')}</span><span class="me-text"><span class="t-body">체크인</span><span class="t-caption ink2">크기 6 · 인지 70% · 심각도 48</span></span><span class="t-label">56점</span></div>
+    </div>` : ''}`;
+  }
+
+  const ROWS = [
+    ['메인 · 재생 중', () => scrMain()],
+    ['내 기록 · 달력', () => scrRecords(false)],
+    ['하루 보기', () => scrRecords(true)],
+  ];
+  document.getElementById('rows').innerHTML = ROWS.map(([title, fn]) => `
+    <h3 class="rowh">${title}</h3>
+    <div class="row3">${Object.entries(THEMES).map(([k, t]) => `
+      <figure class="frame">
+        <figcaption><span class="cap-t">${t.label}</span><span class="cap-s">${t.sub}</span></figcaption>
+        <div class="phone th-${k}"><div class="viewport">${statusBar()}${fn()}<div class="gesture"></div></div></div>
+      </figure>`).join('')}
+    </div>`).join('');
+
+  // Coral comparison in the calls
+  document.getElementById('plays').innerHTML = [['#D67C5C', '지금'], ['#C96F50', '제안']].map(([c, l]) =>
+    `<figure><span class="play" style="--size:64px;background:${c};box-shadow:none">${mi('play_arrow')}</span><span><code>${c}</code> · ${contrast('#FFFFFF', c).toFixed(1)} : 1 · ${l}</span></figure>`).join('');
+
+  function fit() {
+    const w = document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--z', Math.min(1, (w - 32) / 376).toFixed(3));
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+</body>
+</html>

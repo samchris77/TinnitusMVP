@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v1.2 Calendar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block">
+<style>
+  :root {
+    --bg: #F5F1EA;
+    --surface: #FFFFFF;
+    --ink: #1A2E2C;
+    --ink-2: #4A5C5A;
+    --muted: #8B9694;
+    --line: #E5DED2;
+    --track: #E2DCD1;
+    --teal: #2D5F5D;
+    --teal-2: #3E7A77;
+    --teal-soft: #E8F0EE;
+    --shade-1: rgba(45, 95, 93, .14);
+    --shade-2: rgba(45, 95, 93, .40);
+    --shade-3: #2D5F5D;
+    --coral: #D67C5C;
+    --coral-soft: #F8E4D9;
+    --page: #ECE7DE;
+    --bezel: #1F2725;
+    --shadow-card: 0 1px 2px rgba(26, 46, 44, .04), 0 4px 16px rgba(26, 46, 44, .06);
+    --font: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', Roboto, sans-serif;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--page); color: var(--ink); line-height: 1.5; -webkit-font-smoothing: antialiased; word-break: keep-all; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  button:disabled { cursor: default; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; background: rgba(26, 46, 44, .06); padding: 1px 5px; border-radius: 4px; }
+
+  .mi { font-family: 'Material Icons'; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; direction: ltr; font-feature-settings: 'liga'; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; user-select: none; flex: none; }
+  .mi.sm { font-size: 18px; }
+
+  /* ============ Page ============ */
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 56px 24px 120px; }
+  .eyebrow { font-size: 13px; font-weight: 600; color: var(--ink-2); letter-spacing: .2px; }
+  .page-h h1 { font-size: 40px; line-height: 1.15; letter-spacing: -.8px; margin: 8px 0 12px; }
+  .lede { font-size: 18px; color: var(--ink-2); max-width: 800px; }
+  .lede b { color: var(--ink); }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .facts span { background: var(--surface); border-radius: 100px; padding: 6px 16px; font-size: 14px; color: var(--ink-2); }
+  .facts b { color: var(--teal); margin-right: 4px; }
+  .wrap > section { margin-top: 80px; }
+  .wrap > section > h2 { font-size: 26px; letter-spacing: -.4px; line-height: 1.25; }
+  .wrap > section > .sub { color: var(--ink-2); margin: 8px 0 32px; max-width: 800px; }
+
+  .try-grid { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
+  .try-side { flex: 1; min-width: 260px; max-width: 460px; display: flex; flex-direction: column; gap: 24px; }
+  .try-side h3 { font-size: 15px; margin-bottom: 8px; }
+  .try-side ul { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--ink-2); font-size: 15px; }
+  .try-side li b { color: var(--ink); }
+  .note-file { background: var(--coral-soft); border-radius: 12px; padding: 12px 16px; font-size: 14px; }
+  .jumps { display: flex; flex-wrap: wrap; gap: 8px; }
+  .jumps button { height: 36px; padding: 0 14px; border-radius: 100px; background: var(--surface); font-size: 14px; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .jumps button.on { background: var(--teal); color: #fff; box-shadow: none; }
+  .side-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .reset { height: 40px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--teal); box-shadow: inset 0 0 0 1px var(--line); background: var(--surface); }
+  .speed { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); cursor: pointer; }
+  .speed input { width: 18px; height: 18px; accent-color: var(--teal); }
+
+  .changes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border-radius: 16px; padding: 20px 24px; box-shadow: var(--shadow-card); }
+  .panel h3 { font-size: 17px; margin-bottom: 4px; display: flex; gap: 10px; align-items: center; }
+  .panel h3 .n { width: 24px; height: 24px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); font-size: 13px; display: grid; place-items: center; flex: none; }
+  .panel .why { color: var(--ink-2); font-size: 14px; margin-bottom: 12px; }
+  .panel ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+  .panel li span { color: var(--ink-2); }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(376px, 100%), 1fr)); gap: 64px 32px; justify-items: center; }
+  .frame { width: 100%; max-width: 376px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .frame figcaption { width: 100%; }
+  .cap-h { display: flex; align-items: baseline; gap: 8px; }
+  .cap-n { font-size: 13px; font-weight: 700; color: var(--teal); }
+  .cap-t { font-size: 18px; font-weight: 700; }
+  .cap-en { font-size: 14px; color: var(--ink-2); margin: 2px 0 10px; }
+  .frame ul { padding-left: 18px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+
+  .calls { counter-reset: c; list-style: none; display: flex; flex-direction: column; gap: 12px; max-width: 900px; }
+  .calls li { counter-increment: c; background: var(--surface); border-radius: 16px; padding: 16px 20px 16px 56px; position: relative; box-shadow: var(--shadow-card); }
+  .calls li::before { content: counter(c); position: absolute; left: 20px; top: 16px; width: 24px; height: 24px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  .calls b { display: block; }
+  .calls span { color: var(--ink-2); font-size: 15px; }
+  .calls .def { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--teal); }
+  .foot { margin-top: 40px; font-size: 14px; color: var(--ink-2); max-width: 860px; }
+
+  /* ============ Phone ============ */
+  .phone { width: 360px; height: 780px; box-sizing: content-box; border: 8px solid var(--bezel); border-radius: 44px; background: var(--bezel); position: relative; overflow: hidden; flex: none; box-shadow: 0 24px 60px rgba(26, 46, 44, .18); zoom: var(--z, 1); }
+  .viewport { position: absolute; inset: 0; border-radius: 36px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+
+  /* ============ App ============ */
+  .sb { height: 32px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 13px; font-weight: 600; }
+  .sb .mi { font-size: 16px; margin-left: 4px; }
+  .appbar { height: 56px; flex: none; display: flex; align-items: center; padding: 0 4px; gap: 0; }
+  .appbar h2 { font-size: 16px; line-height: 24px; font-weight: 600; flex: 1; padding-left: 4px; }
+  .appbar-lg h2 { font-size: 22px; line-height: 30px; font-weight: 700; letter-spacing: -.3px; padding-left: 12px; }
+  .appbar .step { padding-right: 16px; }
+  .iconbtn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); flex: none; }
+  .iconbtn:active:not(:disabled) { background: rgba(26, 46, 44, .08); }
+  .iconbtn:disabled { opacity: .3; }
+  .iconbtn.new { color: var(--teal); }
+  .content { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: none; }
+  .content::-webkit-scrollbar { display: none; }
+  .content > * { flex-shrink: 0; }
+  .content.main { gap: 20px; }
+  .content.pb { padding-bottom: 40px; }
+  .footer { flex: none; padding: 8px 16px 32px; display: flex; flex-direction: column; gap: 8px; }
+  .gesture { position: absolute; left: 50%; bottom: 8px; width: 108px; height: 4px; margin-left: -54px; border-radius: 2px; background: rgba(26, 46, 44, .35); pointer-events: none; z-index: 20; }
+
+  .t-display { font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -.5px; }
+  .t-display .unit { font-size: 16px; font-weight: 600; color: var(--ink-2); letter-spacing: 0; }
+  .t-title { font-size: 22px; line-height: 30px; font-weight: 700; letter-spacing: -.3px; }
+  .t-body { font-size: 16px; line-height: 24px; }
+  .t-label { font-size: 14px; line-height: 20px; font-weight: 600; }
+  .t-caption { font-size: 13px; line-height: 18px; }
+  .b { font-weight: 600; }
+  .ink2 { color: var(--ink-2); }
+  .teal { color: var(--teal); }
+  .muted { color: var(--muted); }
+  .head { display: flex; flex-direction: column; gap: 4px; }
+
+  .btn { height: 52px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; transition: transform .08s, filter .08s; flex: none; }
+  .btn:active:not(:disabled) { transform: scale(.98); filter: brightness(.95); }
+  .btn:disabled { opacity: .4; }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-inline { height: 48px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--teal); flex: none; }
+
+  .play { --size: 72px; width: var(--size); height: var(--size); border-radius: 50%; background: var(--coral); color: #fff; display: grid; place-items: center; flex: none; position: relative; box-shadow: 0 6px 18px rgba(214, 124, 92, .35); transition: transform .08s; }
+  .play .mi { font-size: calc(var(--size) * .5); }
+  .play:active { transform: scale(.95); }
+  .play.on::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--coral); opacity: 0; animation: pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0% { transform: scale(.92); opacity: .55; } 100% { transform: scale(1.25); opacity: 0; } }
+
+  .card { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-card); padding: 16px; }
+
+  .me2 { padding: 0; overflow: hidden; }
+  .me-top { display: flex; align-items: center; gap: 8px; padding: 12px 8px 12px 16px; min-height: 72px; }
+  .me-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left; }
+  .me-row2 { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 12px 10px 16px; box-shadow: inset 0 1px 0 var(--line); }
+  .me-row2:active { background: rgba(26, 46, 44, .04); }
+  .me-row2 .mi { color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex: none; }
+
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .glabel { padding-left: 4px; }
+  .glabel:not(:first-child) { margin-top: 8px; }
+  .tiles { display: grid; gap: 8px; }
+  .tiles-3 { grid-template-columns: repeat(3, 1fr); }
+  .tiles-4 { grid-template-columns: repeat(4, 1fr); }
+  .tile { height: 72px; border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 14px; line-height: 20px; font-weight: 600; transition: transform .08s; }
+  .tile:active { transform: scale(.97); }
+  .tile .mi { color: var(--ink-2); }
+  .tile.sel { background: var(--teal-soft); box-shadow: inset 0 0 0 2px var(--teal); color: var(--teal); }
+  .tile.sel .mi { color: var(--teal); }
+  .swatch { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(26, 46, 44, .14); display: inline-block; flex: none; }
+
+  .switch-row { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 16px; text-align: left; width: 100%; }
+  .sw-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .switch { width: 52px; height: 32px; border-radius: 16px; background: #D9D3C8; position: relative; flex: none; transition: background .15s; }
+  .switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); transition: transform .15s; }
+  .switch.on { background: var(--teal); }
+  .switch.on::after { transform: translateX(20px); }
+
+  /* Player (unchanged from v1.1) */
+  .player { flex: none; background: var(--surface); border-radius: 16px 16px 0 0; box-shadow: 0 -4px 24px rgba(26, 46, 44, .08); padding: 4px 16px 28px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .vol { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .vol > .mi { font-size: 20px; color: var(--muted); }
+  .range-wrap { position: relative; flex: 1; }
+  .tick { position: absolute; top: 18px; left: calc(12px + (100% - 24px) * var(--t)); width: 2px; height: 12px; margin-left: -1px; background: var(--ink-2); border-radius: 1px; pointer-events: none; }
+  .tick-label { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+  .play-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+  .timer-pill, .pill-spacer { width: 96px; height: 48px; flex: none; }
+  .timer-pill { border-radius: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .timer-pill .mi { font-size: 20px; color: var(--muted); }
+  .hint-row { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 8px; border-radius: 12px; max-width: 100%; }
+  .hint-row .mi { font-size: 18px; }
+  .hint-row .mi.muted { font-size: 20px; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 48px; background: transparent; cursor: pointer; --p: 50%; display: block; }
+  input[type=range]:focus-visible { outline: none; }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--teal) 0, var(--teal) var(--p), var(--track) var(--p), var(--track) 100%); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -9px; border-radius: 50%; background: #fff; border: 2px solid var(--teal); box-shadow: 0 1px 4px rgba(26, 46, 44, .25); }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--track); }
+  input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--teal); }
+  input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--teal); box-shadow: 0 1px 4px rgba(26, 46, 44, .25); }
+  input.unanswered::-webkit-slider-thumb { opacity: 0; }
+  input.unanswered::-moz-range-thumb { opacity: 0; }
+  input.vas-range::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; background: var(--track); }
+  input.vas-range::-webkit-slider-thumb { margin-top: -8px; }
+
+  .readout { background: var(--teal-soft); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .slider-block { display: flex; flex-direction: column; }
+  .slider-ends { display: flex; justify-content: space-between; gap: 16px; margin-top: -8px; padding: 0 2px; }
+  .slider-ends span { max-width: 48%; }
+  .slider-ends span:last-child { text-align: right; }
+
+  /* ============ Calendar (new) ============ */
+  .cal-card { padding: 8px 8px 16px 16px; }
+  .cal-h { display: flex; align-items: center; min-height: 56px; margin-bottom: 4px; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-right: 8px; }
+  .cal .wd { text-align: center; font-size: 13px; line-height: 20px; color: var(--ink-2); padding-bottom: 4px; }
+  .cell { aspect-ratio: 1; border-radius: 8px; position: relative; display: grid; place-items: center; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ink); transition: transform .08s; }
+  .cell:active:not(:disabled) { transform: scale(.92); }
+  .cell.l1 { background: var(--shade-1); }
+  .cell.l2 { background: var(--shade-2); }
+  .cell.l3 { background: var(--shade-3); color: #fff; }
+  .cell:disabled { color: var(--muted); opacity: .55; }
+  .cell.today { outline: 2px solid var(--ink); outline-offset: 1px; font-weight: 700; }
+  .cdot { position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--ink); }
+  .cell.l3 .cdot { background: #fff; }
+  .legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 6px; margin: 14px 8px 0 0; }
+  .legend > span { display: inline-flex; align-items: center; gap: 5px; }
+  .lg-sw { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .lg-sw.l1 { background: var(--shade-1); }
+  .lg-sw.l2 { background: var(--shade-2); }
+  .lg-sw.l3 { background: var(--shade-3); }
+  .legend .cdot { position: static; margin: 0 3px; }
+
+  /* Day sheet */
+  .drow { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 16px; }
+  .list .drow + .drow { box-shadow: inset 0 1px 0 var(--line); }
+  .dvis { width: 24px; height: 24px; display: grid; place-items: center; color: var(--ink-2); flex: none; }
+  .drow .t-label { font-variant-numeric: tabular-nums; }
+  .first-ci { display: flex; flex-direction: column; gap: 4px; }
+  .first-ci .btn { margin-top: 12px; }
+
+  /* Score section (unchanged from v1.1) */
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .delta { display: flex; align-items: center; gap: 4px; }
+  .delta .mi { color: var(--ink-2); }
+  .chart-card { padding: 16px 16px 12px; position: relative; }
+  .chart-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+  .chart { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart .axis { font-size: 13px; fill: var(--ink-2); font-family: var(--font); }
+  .chart .end { font-size: 13px; font-weight: 600; fill: var(--ink); font-family: var(--font); }
+  .chart .area { fill: var(--teal); fill-opacity: .10; }
+  .chart .ln { fill: none; stroke: var(--teal); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .pt { fill: var(--teal); stroke: var(--surface); stroke-width: 2; }
+  .chart .xhair { stroke: var(--ink-2); stroke-width: 1; }
+  .chart .hit { fill: transparent; cursor: crosshair; }
+  .tip { position: absolute; pointer-events: none; background: var(--ink); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; line-height: 18px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); }
+  .tip b { font-size: 14px; display: block; }
+  .tip span { opacity: .8; }
+  .empty { background: var(--bg); border-radius: 12px; padding: 20px 16px; text-align: center; }
+  .hist { padding: 0; overflow: hidden; }
+  .hrow { display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 64px; }
+  .hrow + .hrow { box-shadow: inset 0 1px 0 var(--line); }
+  .hrow .me-text { gap: 0; }
+  .hrow .score { font-size: 16px; font-weight: 700; }
+  .next-row { display: flex; align-items: center; gap: 8px; padding: 14px 16px; }
+  .next-row .mi { color: var(--teal); font-size: 20px; }
+
+  /* Sheet */
+  .scrim { position: absolute; inset: 0; background: rgba(26, 46, 44, .4); z-index: 5; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); border-radius: 16px 16px 0 0; padding: 8px 16px 40px; display: flex; flex-direction: column; gap: 16px; animation: up .2s ease-out; }
+  .sheet.still { animation: none; }
+  @keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .handle { width: 32px; height: 4px; border-radius: 2px; background: rgba(26, 46, 44, .2); align-self: center; }
+  .sheet-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-right: -12px; }
+  .sheet-h .head { padding-top: 8px; }
+  .list { padding: 0; overflow: hidden; }
+
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 200px; z-index: 10; background: var(--ink); color: #fff; border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 20px; opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: none; }
+
+  [inert] { pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .play.on::before { animation: none; opacity: .35; transform: none; }
+    .sheet { animation: none; }
+    * { transition: none !important; }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 32px 16px 80px; }
+    .page-h h1 { font-size: 32px; }
+    .lede { font-size: 16px; }
+    .wrap > section { margin-top: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-h">
+    <p class="eyebrow">TinnitusMVP · 디자인 제안 · 2026-10-22</p>
+    <h1>v1.2 design · 달력</h1>
+    <p class="lede">A month calendar of listening time, at the top of <b>내 기록</b> (today's 내 변화 screen, renamed). It fills itself while sound plays, so there is nothing to enter. <b>Darker days mean more listening.</b> There is no daily goal, no streak and no daily rating; the weekly check-in stays the only score.</p>
+    <div class="facts">
+      <span><b>1</b>calendar card</span>
+      <span><b>1</b>bottom sheet</span>
+      <span><b>1</b>app-bar button</span>
+      <span><b>0</b>new questions</span>
+      <span><b>0</b>new tabs</span>
+    </div>
+  </header>
+
+  <section id="try">
+    <h2>Try it</h2>
+    <p class="sub">The phone starts on the main screen of someone four weeks in: listening on most evenings, three weekly check-ins, and this week's due. Today is Wednesday 21 October and nothing has played yet.</p>
+    <div class="try-grid">
+      <div class="phone" id="proto-phone">
+        <div class="viewport" id="proto-view"></div>
+        <div class="toast" id="proto-toast" role="status" aria-live="polite"></div>
+      </div>
+      <aside class="try-side">
+        <div>
+          <h3>Things to try</h3>
+          <ul>
+            <li><b>Turn your computer volume down first</b>, then press play.</li>
+            <li>Tap the <b>calendar icon</b> at the top right. Today's square fills in while sound plays. With the speed-up below, each second counts as 10 minutes.</li>
+            <li><b>Tap any day</b> to see what was played and for how long. Try a blank day and a day with a dot.</li>
+            <li>Go back to <b>September</b> with ‹. It's the first month with a record, so ‹ stops there.</li>
+            <li>Do this week's <b>check-in</b> from the 내 이명 card. A dot appears on today.</li>
+          </ul>
+        </div>
+        <label class="speed"><input type="checkbox" id="speed" checked> Count each second as 10 minutes</label>
+        <p class="note-file" id="file-note" hidden>Opened as a local file, the browser won't play the nature sounds through the notch. Serve the folder instead: <code>python3 -m http.server 8766</code> in the <code>TinnitusMVP</code> folder, then open <code>localhost:8766/docs/design/v1.2-calendar.html</code>.</p>
+        <div>
+          <h3>Jump to a screen</h3>
+          <div class="jumps" id="jumps"></div>
+        </div>
+        <div class="side-row"><button class="reset" id="reset">처음부터 다시</button></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="what">
+    <h2>What it does</h2>
+    <p class="sub">The calendar answers "how much have I been listening?" at a glance, and the day sheet answers "what did I play?". It deliberately doesn't judge.</p>
+    <div class="changes">
+      <div class="panel">
+        <h3><span class="n">1</span>Where it lives</h3>
+        <p class="why">One screen for everything recorded, reachable from anywhere.</p>
+        <ul>
+          <li>A calendar icon in the main app bar opens 내 기록</li>
+          <li>It works every week. <span>In v1.1, 내 변화 was out of reach while a check-in was due.</span></li>
+          <li>Calendar on top; the v1.1 score, chart and history below, unchanged</li>
+          <li>The main screen otherwise stays as it is</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="n">2</span>What a day shows</h3>
+        <p class="why">Recorded automatically while sound plays. Nothing to type or tap.</p>
+        <ul>
+          <li>Shade by listening time: none, under 30 minutes, 30 minutes to 2 hours, 2 hours or more</li>
+          <li>A dot on check-in days, so the weekly score sits next to the listening around it</li>
+          <li>Today outlined. Future days dimmed and not tappable.</li>
+          <li>Tap a day: each sound played, notch on or off, and how long</li>
+          <li>Month line: days listened and total time</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="n">3</span>What it leaves out</h3>
+        <p class="why">Each of these would make the calendar judge the person instead of record what happened.</p>
+        <ul>
+          <li><b>No daily goal or ✓.</b> <span>TRT asks for about 8 hours a day with wearable devices (<code>docs/clinical/sound-therapy.md</code>). Most phone listening is evenings and bedtime, so nearly every day would read as a miss.</span></li>
+          <li><b>No streak.</b> <span>One bad night resets it.</span></li>
+          <li><b>No daily "how is it today?"</b> <span>That asks people to attend to their tinnitus every day, while sound therapy aims to draw attention away from it. The weekly K-TMI check-in stays the only rating.</span></li>
+          <li><b>No red or empty-day colour, and no editing.</b></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <h2>All screens</h2>
+    <p class="sub">Seven frames, including the states that matter: a day with nothing played, the first month, and a fresh install with no record at all.</p>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section id="build">
+    <h2>What it takes to build</h2>
+    <p class="sub">About a day. No database: one more value in the same DataStore file, and one timer in the playback controller.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Saved on the phone</h3>
+        <ul>
+          <li><code>listening</code> <span>— one entry per day, sound and notch setting, in seconds, e.g. <code>2026-10-18,rain,1,4200</code></span></li>
+          <li>About 1–3 entries a day, roughly 20 KB a year. Nothing leaves the phone.</li>
+          <li>The app doesn't record listening today, so the calendar starts empty on the day of the update.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Counting rules</h3>
+        <ul>
+          <li>Counts while a sound plays, from the main screen or 내 볼륨 찾기. <span>The finder's test tones never count.</span></li>
+          <li>Saved every minute while playing and again on pause, so a killed app loses at most a minute</li>
+          <li>Sessions under a minute are dropped <span>— accidental taps</span></li>
+          <li>A session counts toward the day it started. One started before 4 a.m. counts toward the day before, so a night of listening stays on one day.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Code</h3>
+        <ul>
+          <li><code>data/ListeningLog.kt</code>: entries, encoding, the 4 a.m. rule and month totals, with unit tests for each</li>
+          <li><code>PlaybackController</code>: notes the session's day on play, adds time each minute and on pause</li>
+          <li><code>MonthCalendar</code> (7 columns, Sunday first) and <code>DaySheet</code> (same bottom sheet as the timer)</li>
+          <li><code>ProgressScreen</code> becomes <code>RecordsScreen</code>; a calendar icon joins the main app bar</li>
+          <li>Each day has a spoken label, e.g. "10월 18일, 1시간 35분 들음, 체크인". <span>Cells are about 42 dp, under the 48 dp guideline, as in most month grids; seven don't fit wider on a 360 dp phone.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="decide">
+    <h2>Your calls</h2>
+    <p class="sub">The defaults are what the screens show.</p>
+    <ol class="calls">
+      <li><b>Shade steps: 30 minutes and 2 hours</b><span>Set for phone listening, which is mostly evenings and bedtime. Steps near the 8-hour TRT figure would leave almost every day pale.</span><br><span class="def">Default: under 30분 · 30분–2시간 · 2시간 이상</span></li>
+      <li><b>No goal, no streak</b><span>A goal line or streak would raise use for some people, but it turns the calendar into a scorecard and most days into misses.</span><br><span class="def">Default: none; the month line counts days and hours</span></li>
+      <li><b>When a day ends</b><span>A session counts toward the day it started, with the day changing at 4 a.m. Splitting at midnight would spread one night over two squares.</span><br><span class="def">Default: start day, 4 a.m. boundary</span></li>
+      <li><b>Rename 내 변화 to 내 기록, with an app-bar icon</b><span>The screen now holds listening as well as scores. The 내 이명 card row still opens it when the check-in isn't due.</span><br><span class="def">Default: rename and add the icon</span></li>
+      <li><b>First day of the week</b><span>Follow the phone's locale, which is Sunday for Korean.</span><br><span class="def">Default: locale (일요일)</span></li>
+      <li><b>Today's time on the main screen</b><span>A line like "오늘 35분" under play would show the record without opening it, but it adds a line to the screen that should stay simplest.</span><br><span class="def">Default: not shown</span></li>
+    </ol>
+    <p class="foot">Korean copy is a draft for clinical review. The calendar makes no clinical claim: it reports minutes, and the only score stays the K-TMI check-in, whose validated wording is unchanged.</p>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Content ----------
+  const SOUND_DIR = '../../app/src/main/res/raw/';
+  const VOL_MAX = 15;
+  const NOTCH_HZ = 4240;
+  const SOUNDS = [
+    { id: 'white', name: '화이트', full: '화이트 노이즈', group: 'noise', swatch: '#FFFFFF' },
+    { id: 'pink',  name: '핑크',   full: '핑크 노이즈',   group: 'noise', swatch: '#EBB7B1' },
+    { id: 'brown', name: '브라운', full: '브라운 노이즈', group: 'noise', swatch: '#8C664D' },
+    { id: 'rain',  name: '빗소리', full: '빗소리', group: 'nature', icon: 'umbrella', file: 'rain.m4a' },
+    { id: 'waves', name: '파도',   full: '파도',   group: 'nature', icon: 'waves', file: 'waves.m4a' },
+    { id: 'brook', name: '시냇물', full: '시냇물', group: 'nature', icon: 'water_drop', file: 'brook.m4a' },
+    { id: 'fire',  name: '모닥불', full: '모닥불', group: 'nature', icon: 'local_fire_department', file: 'fire.m4a' },
+  ];
+  const soundById = id => SOUNDS.find(x => x.id === id);
+
+  // K-TMI, validated Korean wording (Hwang & Bahng 2018). Do not paraphrase.
+  const QUESTIONS = [
+    { key: 'q1', title: '지난 한 주 동안, 이명이 얼마나 크게 들렸습니까?', min: 0, max: 10, step: 1, lo: '전혀 크지 않았다', hi: '매우 크게 들렸다', unit: '', range: '0–10', number: true },
+    { key: 'q2', title: '깨어 있는 시간 중에 이명을 인지하는 시간은 몇 % 정도 되었습니까?', min: 0, max: 100, step: 10, lo: '전혀 인지하지 못하였다', hi: '항상 인지하였다', unit: '%', range: '0–100%', number: true },
+    { key: 'q3', title: '지난 한 주 동안, 이명이 얼마나 심각하게 느껴졌습니까?', min: 0, max: 100, step: 1, lo: '전혀 심각하지 않았다', hi: '매우 심각하다고 느꼈다', unit: '', range: '', number: false },
+  ];
+  const score = c => Math.round(c.q1 * 10 * 0.5856 + c.q2 * 0.0423 + c.q3 * 0.3721);
+
+  const TODAY = '2026-10-21';
+  const NOW_MONTH = TODAY.slice(0, 7);
+  const SEED = [
+    { date: '2026-09-30', q1: 7, q2: 80, q3: 62 },
+    { date: '2026-10-07', q1: 6, q2: 80, q3: 55 },
+    { date: '2026-10-14', q1: 6, q2: 70, q3: 48 },
+  ];
+  // Four weeks of listening, in minutes: [sound, notch on, minutes]. Measured on 9/30, so the notch starts then.
+  const LOG_SEED = {
+    '2026-09-26': [['pink', 0, 25]],
+    '2026-09-27': [['rain', 0, 40]],
+    '2026-09-29': [['rain', 0, 15]],
+    '2026-09-30': [['pink', 1, 35]],
+    '2026-10-01': [['rain', 1, 70]],
+    '2026-10-02': [['rain', 1, 45], ['brown', 1, 20]],
+    '2026-10-04': [['waves', 1, 150]],
+    '2026-10-05': [['rain', 1, 30]],
+    '2026-10-06': [['rain', 1, 55]],
+    '2026-10-07': [['rain', 1, 60], ['pink', 1, 25]],
+    '2026-10-09': [['rain', 1, 90]],
+    '2026-10-10': [['brook', 1, 180], ['rain', 1, 40]],
+    '2026-10-11': [['brook', 1, 135]],
+    '2026-10-12': [['rain', 1, 20]],
+    '2026-10-14': [['rain', 1, 65], ['pink', 1, 30]],
+    '2026-10-15': [['rain', 1, 45]],
+    '2026-10-16': [['fire', 1, 75]],
+    '2026-10-17': [['rain', 1, 240]],
+    '2026-10-18': [['rain', 1, 70], ['pink', 1, 25]],
+    '2026-10-20': [['rain', 1, 50]],
+  };
+  const seedLog = () => {
+    const o = {};
+    for (const [d, list] of Object.entries(LOG_SEED)) o[d] = list.map(([id, n, m]) => ({ id, notch: !!n, sec: m * 60 }));
+    return o;
+  };
+
+  const pad = n => String(n).padStart(2, '0');
+  const parse = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  const iso = t => `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+  const addDays = (s, n) => { const t = parse(s); t.setDate(t.getDate() + n); return iso(t); };
+  const longDate = s => { const t = parse(s); return `${t.getMonth() + 1}월 ${t.getDate()}일`; };
+  const shortDate = s => { const t = parse(s); return `${t.getMonth() + 1}/${t.getDate()}`; };
+  const weekday = s => '일월화수목금토'[parse(s).getDay()] + '요일';
+  const fmtHz = hz => Math.round(hz).toLocaleString('ko-KR') + ' Hz';
+  const mi = (name, cls = '') => `<span class="mi ${cls}" aria-hidden="true">${name}</span>`;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const nextDue = s => s.checkins.length ? addDays(s.checkins[s.checkins.length - 1].date, 7) : TODAY;
+  const isDue = s => nextDue(s) <= TODAY;
+
+  // Listening log helpers
+  const ym = d => d.slice(0, 7);
+  const monthLabel = k => { const [y, m] = k.split('-').map(Number); return `${y}년 ${m}월`; };
+  const addMonth = (k, n) => { const [y, m] = k.split('-').map(Number); const t = new Date(y, m - 1 + n, 1); return `${t.getFullYear()}-${pad(t.getMonth() + 1)}`; };
+  const daySec = (s, d) => (s.log[d] || []).reduce((a, x) => a + x.sec, 0);
+  /** 0 = nothing (under a minute), 1 = under 30 min, 2 = under 2 h, 3 = 2 h or more. */
+  const level = sec => sec < 60 ? 0 : sec < 1800 ? 1 : sec < 7200 ? 2 : 3;
+  const fmtDur = sec => { const m = Math.floor(sec / 60), h = Math.floor(m / 60), r = m % 60; return h ? (r ? `${h}시간 ${r}분` : `${h}시간`) : `${m}분`; };
+  const checkinOn = (s, d) => s.checkins.find(c => c.date === d);
+  const firstMonth = s => [NOW_MONTH, ...Object.keys(s.log).map(ym), ...s.checkins.map(c => ym(c.date))].sort()[0];
+
+  // ---------- Audio (prototype only, same engine as v1.1) ----------
+  const Snd = (() => {
+    const isFile = location.protocol === 'file:';
+    let ctx = null, master, dry, wet, bsIn, cur = null;
+    const buffers = {}, media = {};
+    let level = 5, notchOn = false;
+    const levelGain = v => v <= 0 ? 0 : Math.pow(10, (-45 + 3 * v) / 20);
+    const to = (param, v, tc = 0.03) => param.setTargetAtTime(v, ctx.currentTime, tc);
+
+    function unlock() {
+      try {
+        if (!ctx) { ctx = new (window.AudioContext || window.webkitAudioContext)(); build(); }
+        if (ctx.state === 'suspended') ctx.resume();
+      } catch (e) { console.warn('Web Audio unavailable', e); }
+      return !!ctx;
+    }
+    function build() {
+      master = ctx.createGain(); master.gain.value = levelGain(level); master.connect(ctx.destination);
+      dry = ctx.createGain(); wet = ctx.createGain(); dry.connect(master); wet.connect(master);
+      bsIn = ctx.createGain();
+      let n = bsIn;
+      for (let i = 0; i < 4; i++) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = Math.SQRT1_2; f.frequency.value = NOTCH_HZ * Math.pow(2, -0.6); n.connect(f); n = f; }
+      n.connect(wet);
+      n = bsIn;
+      for (let i = 0; i < 4; i++) { const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.Q.value = Math.SQRT1_2; f.frequency.value = Math.min(ctx.sampleRate * 0.475, NOTCH_HZ * Math.pow(2, 0.6)); n.connect(f); n = f; }
+      n.connect(wet);
+      dry.gain.value = notchOn ? 0 : 1; wet.gain.value = notchOn ? 1 : 0;
+    }
+    function makeNoise(kind) {
+      const sr = ctx.sampleRate, N = Math.floor(sr * 8), F = Math.floor(sr * 0.5);
+      const a = new Float32Array(N + F);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, br = 0;
+      for (let i = 0; i < N + F; i++) {
+        const w = Math.random() * 2 - 1;
+        if (kind === 'white') a[i] = w;
+        else if (kind === 'pink') {
+          b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759;
+          b2 = 0.96900 * b2 + w * 0.1538520; b3 = 0.86650 * b3 + w * 0.3104856;
+          b4 = 0.55000 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.0168980;
+          a[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362; b6 = w * 0.115926;
+        } else { br = (br + 0.02 * w) / 1.02; a[i] = br; }
+      }
+      const buf = ctx.createBuffer(1, N, sr), d = buf.getChannelData(0);
+      for (let i = 0; i < N; i++) d[i] = a[i];
+      for (let i = 0; i < F; i++) { const t = i / F; d[i] = a[i] * Math.sqrt(t) + a[N + i] * Math.sqrt(1 - t); }
+      let sum = 0; for (let i = 0; i < N; i++) sum += d[i] * d[i];
+      const k = 0.05 / Math.sqrt(sum / N);
+      for (let i = 0; i < N; i++) d[i] *= k;
+      return buf;
+    }
+    function makeSource(id) {
+      const s = soundById(id);
+      if (s.group === 'noise') {
+        buffers[id] = buffers[id] || makeNoise(id);
+        const src = ctx.createBufferSource(); src.buffer = buffers[id]; src.loop = true;
+        return { id, node: src, el: null, start: () => src.start(), stop: () => { try { src.stop(); } catch (e) { /* stopped */ } } };
+      }
+      const m = media[id] || (media[id] = { el: new Audio(SOUND_DIR + s.file), node: null });
+      m.el.loop = true;
+      if (!isFile && !m.node) { try { m.node = ctx.createMediaElementSource(m.el); } catch (e) { console.warn(e); } }
+      return { id, node: m.node, el: m.el, start: () => m.el.play().catch(e => console.warn(e)), stop: () => m.el.pause() };
+    }
+    function play(id) {
+      if (!unlock()) return;
+      if (cur && cur.id === id) return;
+      const old = cur, src = makeSource(id), g = ctx.createGain();
+      g.gain.value = 0;
+      if (src.node) { src.node.connect(g); g.connect(dry); g.connect(bsIn); to(g.gain, 1, 0.08); }
+      else src.el.volume = Math.min(1, levelGain(level));
+      src.start();
+      cur = Object.assign({}, src, { g });
+      if (old) retire(old);
+    }
+    function retire(o) {
+      if (!o.node) { if (!(cur && cur.el === o.el)) o.stop(); return; }
+      to(o.g.gain, 0, 0.08);
+      setTimeout(() => {
+        try { o.node.disconnect(o.g); } catch (e) { /* gone */ }
+        o.g.disconnect();
+        if (!(cur && o.el && cur.el === o.el)) o.stop();
+      }, 450);
+    }
+    function stop() { if (cur) { const o = cur; cur = null; retire(o); } }
+    function setLevel(v) {
+      level = v;
+      if (!ctx) return;
+      to(master.gain, levelGain(v), 0.04);
+      if (cur && !cur.node && cur.el) cur.el.volume = Math.min(1, levelGain(v));
+    }
+    function setNotch(on) {
+      notchOn = on;
+      if (!ctx) return;
+      to(dry.gain, on ? 0 : 1); to(wet.gain, on ? 1 : 0);
+    }
+    return { isFile, unlock, play, stop, setLevel, setNotch };
+  })();
+
+  // ---------- Screens ----------
+  const statusBar = () => `<div class="sb"><span>9:41</span><span>${mi('signal_cellular_alt')}${mi('wifi')}${mi('battery_full')}</span></div>`;
+
+  function appBar({ back = false, title = '', right = '', large = false, info = false, records = false } = {}) {
+    return `<header class="appbar ${large ? 'appbar-lg' : ''}">
+      ${back ? `<button class="iconbtn" data-act="back" aria-label="뒤로">${mi('arrow_back')}</button>` : ''}
+      <h2>${title}</h2>
+      ${right ? `<span class="t-caption ink2 step">${right}</span>` : ''}
+      ${records ? `<button class="iconbtn" data-act="records" aria-label="내 기록">${mi('calendar_month')}</button>` : ''}
+      ${info ? `<button class="iconbtn" data-act="noop" aria-label="앱 정보">${mi('info')}</button>` : ''}
+    </header>`;
+  }
+
+  const playBtn = (on, act, size) =>
+    `<button class="play ${on ? 'on' : ''}" style="--size:${size}px" data-act="${act}" aria-label="${on ? '일시정지' : '재생'}">${mi(on ? 'pause' : 'play_arrow')}</button>`;
+
+  function meCard(s) {
+    const p = s.profile;
+    const top = `<div class="me-top">
+      <div class="me-text"><span class="t-caption ink2">내 이명</span><span class="t-body b">${p ? `${fmtHz(p.hz)} · 크기 ${p.loud}` : '아직 찾지 않았어요'}</span></div>
+      <button class="btn-inline" data-act="refind">다시 찾기</button>
+    </div>`;
+    let row2;
+    if (isDue(s)) {
+      const first = s.checkins.length === 0;
+      row2 = `<button class="me-row2" data-act="checkin">
+        <span class="dot"></span>
+        <span class="me-text"><span class="t-label">${first ? '첫 체크인' : '이번 주 체크인'}</span><span class="t-caption ink2">${first ? '기준점을 만들어요 · 2분' : '질문 3개 · 2분'}</span></span>
+        ${mi('chevron_right')}
+      </button>`;
+    } else {
+      const n = s.checkins.length;
+      const sc = score(s.checkins[n - 1]);
+      const prev = n > 1 ? score(s.checkins[n - 2]) : null;
+      const delta = prev == null ? '첫 기록이에요' : sc < prev ? `지난주보다 ${prev - sc}점 낮아요` : sc > prev ? `지난주보다 ${sc - prev}점 높아요` : '지난주와 같아요';
+      row2 = `<button class="me-row2" data-act="records">
+        <span class="me-text"><span class="t-label">이명 점수 ${sc}</span><span class="t-caption ink2">${delta}</span></span>
+        <span class="t-label teal">내 기록</span>${mi('chevron_right')}
+      </button>`;
+    }
+    return `<div class="card me2">${top}${row2}</div>`;
+  }
+
+  function tile(x, s) {
+    const sel = s.sound === x.id;
+    const visual = x.group === 'noise' ? `<span class="swatch" style="background:${x.swatch}"></span>` : mi(x.icon);
+    return `<button class="tile ${sel ? 'sel' : ''}" data-act="tile" data-id="${x.id}" aria-pressed="${sel}" aria-label="${x.full}">${visual}<span>${x.name}</span></button>`;
+  }
+
+  function scrMain(s) {
+    const canNotch = !!(s.profile && s.profile.hz);
+    const notchOn = s.notch && canNotch;
+    return `${appBar({ title: '이명 사운드', large: true, info: true, records: true })}
+    <div class="content main">
+      ${meCard(s)}
+      <div class="group">
+        <div class="t-caption ink2 glabel">노이즈</div>
+        <div class="tiles tiles-3">${SOUNDS.filter(x => x.group === 'noise').map(x => tile(x, s)).join('')}</div>
+        <div class="t-caption ink2 glabel">자연음</div>
+        <div class="tiles tiles-4">${SOUNDS.filter(x => x.group === 'nature').map(x => tile(x, s)).join('')}</div>
+      </div>
+      <button class="card switch-row" role="switch" aria-checked="${notchOn}" data-act="notch" ${canNotch ? '' : 'disabled'}>
+        <span class="sw-text"><span class="t-body b sw-title">이명 음 빼기</span><span class="t-caption ink2">${canNotch ? `${fmtHz(s.profile.hz)} 주변을 비우고 들려줘요` : '내 이명을 찾으면 쓸 수 있어요'}</span></span>
+        <span class="switch ${notchOn ? 'on' : ''}"></span>
+      </button>
+    </div>
+    <div class="player">
+      <div class="vol">${mi('volume_down')}
+        <div class="range-wrap"><input type="range" min="0" max="${VOL_MAX}" step="1" value="${s.vol}" style="--p:${s.vol / VOL_MAX * 100}%" data-input="vol" aria-label="볼륨"><span class="tick" style="--t:${s.mix / VOL_MAX}"><span class="tick-label t-caption ink2">혼합점</span></span></div>
+        ${mi('volume_up')}</div>
+      <div class="play-row"><button class="timer-pill" data-act="noop11" aria-label="수면 타이머">${mi('bedtime')}<span>타이머</span></button>${playBtn(s.playing, 'play', 72)}<span class="pill-spacer"></span></div>
+      <button class="hint-row" data-act="noop11">${mi('check_circle', 'teal sm')}<span class="t-caption ink2">권장 볼륨이에요</span>${mi('chevron_right', 'muted')}</button>
+    </div>`;
+  }
+
+  function scrCheckin(s, i) {
+    const q = QUESTIONS[i];
+    const v = s.draft[q.key];
+    const answered = v != null;
+    const value = q.number
+      ? `<div class="readout"><div class="t-display teal" data-bind="civ">${answered ? v + q.unit : '—'}</div><div class="t-caption ink2">${q.range}</div></div>`
+      : `<p class="t-body ink2">막대 위, 느낌에 맞는 곳을 누르세요.</p>`;
+    const p = answered && q.number ? (v - q.min) / (q.max - q.min) * 100 : 0;
+    return `${appBar({ back: true, title: '이번 주 체크인', right: `${i + 1} / 3` })}
+    <div class="content">
+      <h1 class="t-title">${q.title}</h1>
+      ${value}
+      <div class="slider-block">
+        <input type="range" class="${answered ? '' : 'unanswered'} ${q.number ? '' : 'vas-range'}" min="${q.min}" max="${q.max}" step="${q.step}"
+          value="${answered ? v : Math.round((q.min + q.max) / 2)}" style="--p:${p}%" data-input="ci" data-i="${i}" aria-label="${q.title}">
+        <div class="slider-ends t-caption ink2"><span>${q.lo}</span><span>${q.hi}</span></div>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-primary" data-act="${i < 2 ? 'ci-next' : 'ci-done'}" data-bind="cinext" ${answered ? '' : 'disabled'}>${i < 2 ? '다음' : '완료'}</button>
+    </div>`;
+  }
+
+  /** Month grid. Shade = listening time that day; dot = check-in; today outlined. */
+  function calendarCard(s) {
+    const k = s.month, [y, m] = k.split('-').map(Number);
+    const lead = new Date(y, m - 1, 1).getDay(), n = new Date(y, m, 0).getDate();
+    let days = 0, total = 0, cells = '';
+    for (let i = 0; i < lead; i++) cells += '<span></span>';
+    for (let d = 1; d <= n; d++) {
+      const date = `${k}-${pad(d)}`;
+      const future = date > TODAY;
+      const sec = future ? 0 : daySec(s, date);
+      const lv = level(sec);
+      if (lv) { days++; total += sec; }
+      const ci = checkinOn(s, date);
+      const today = date === TODAY;
+      const label = future ? `${m}월 ${d}일` : `${m}월 ${d}일${today ? ' 오늘' : ''}, ${lv ? fmtDur(sec) + ' 들음' : '안 들음'}${ci ? ', 체크인' : ''}`;
+      cells += `<button class="cell l${lv} ${today ? 'today' : ''}" data-act="day" data-day="${date}" ${future ? 'disabled' : ''} aria-label="${label}">${d}${ci ? '<i class="cdot"></i>' : ''}</button>`;
+    }
+    const first = firstMonth(s);
+    const anything = Object.keys(s.log).length > 0;
+    const summary = days ? `${days}일 들었어요 · 총 ${fmtDur(total)}`
+      : !anything ? '소리를 틀면 들은 시간이 여기에 쌓여요'
+      : k === NOW_MONTH ? '이번 달은 아직 듣지 않았어요' : '이 달은 듣지 않았어요';
+    return `<div class="card cal-card">
+      <div class="cal-h">
+        <div class="me-text"><span class="t-body b">${monthLabel(k)}</span><span class="t-caption ink2">${summary}</span></div>
+        <button class="iconbtn" data-act="month" data-dir="-1" aria-label="이전 달" ${k <= first ? 'disabled' : ''}>${mi('chevron_left')}</button>
+        <button class="iconbtn" data-act="month" data-dir="1" aria-label="다음 달" ${k >= NOW_MONTH ? 'disabled' : ''}>${mi('chevron_right')}</button>
+      </div>
+      <div class="cal">${[...'일월화수목금토'].map(w => `<span class="wd" aria-hidden="true">${w}</span>`).join('')}${cells}</div>
+      <div class="legend t-caption ink2">
+        <span><i class="lg-sw l1"></i>30분 미만</span><span><i class="lg-sw l2"></i>30분–2시간</span><span><i class="lg-sw l3"></i>2시간 이상</span><span><i class="cdot"></i>체크인</span>
+      </div>
+    </div>`;
+  }
+
+  function daySheet(s) {
+    const d = s.sheet.day;
+    const items = (s.log[d] || []).filter(x => x.sec >= 60).sort((a, b) => b.sec - a.sec);
+    const total = items.reduce((a, x) => a + x.sec, 0);
+    const ci = checkinOn(s, d);
+    const today = d === TODAY;
+    const headline = total ? `${today ? '지금까지 ' : ''}${fmtDur(total)} 들었어요`
+      : today ? '오늘은 아직 듣지 않았어요' : '이날은 소리를 듣지 않았어요';
+    const rows = items.map(x => {
+      const snd = soundById(x.id);
+      const vis = snd.group === 'noise' ? `<span class="swatch" style="background:${snd.swatch}"></span>` : mi(snd.icon);
+      return `<div class="drow"><span class="dvis">${vis}</span>
+        <span class="me-text"><span class="t-body">${snd.full}</span><span class="t-caption ink2">이명 음 빼기 ${x.notch ? '켜짐' : '꺼짐'}</span></span>
+        <span class="t-label">${fmtDur(x.sec)}</span></div>`;
+    }).join('');
+    const ciRow = ci ? `<div class="card drow" style="padding:10px 16px"><span class="dvis">${mi('event_available', 'teal')}</span>
+        <span class="me-text"><span class="t-body">체크인</span><span class="t-caption ink2">크기 ${ci.q1} · 인지 ${ci.q2}% · 심각도 ${ci.q3}</span></span>
+        <span class="t-label">${score(ci)}점</span></div>` : '';
+    return `<div class="scrim" data-act="sheet-close"></div>
+    <div class="sheet ${s.still ? 'still' : ''}" role="dialog" aria-label="${longDate(d)} 기록">
+      <div class="handle"></div>
+      <div class="sheet-h">
+        <div class="head"><h2 class="t-title">${longDate(d)} ${weekday(d)}</h2><p class="t-body ink2">${headline}</p></div>
+        <button class="iconbtn" data-act="sheet-close" aria-label="닫기">${mi('close')}</button>
+      </div>
+      ${items.length ? `<div class="card list">${rows}</div>` : ''}
+      ${ciRow}
+    </div>`;
+  }
+
+  /** Single-series line chart of the K-TMI score (unchanged from v1.1). */
+  function chartSVG(list, hover = null) {
+    const w = 296, h = 168, L = 30, R = 34, T = 12, B = 28;
+    const pw = w - L - R, ph = h - T - B, n = list.length;
+    const xs = i => L + (n === 1 ? pw / 2 : i * pw / (n - 1));
+    const ys = v => T + (1 - v / 100) * ph;
+    const pts = list.map((c, i) => [xs(i), ys(score(c))]);
+    const grid = [0, 50, 100].map(v =>
+      `<line class="grid" x1="${L}" x2="${w - R + 8}" y1="${ys(v)}" y2="${ys(v)}"/><text class="axis" x="${L - 8}" y="${ys(v) + 4}" text-anchor="end">${v}</text>`).join('');
+    const xlab = list.map((c, i) => `<text class="axis" x="${xs(i)}" y="${h - 6}" text-anchor="middle">${shortDate(c.date)}</text>`).join('');
+    const line = 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' L');
+    const area = `M${pts[0][0].toFixed(1)},${ys(0)} L` + pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' L') + ` L${pts[n - 1][0].toFixed(1)},${ys(0)} Z`;
+    const dots = pts.map(p => `<circle class="pt" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5"/>`).join('');
+    const last = pts[n - 1];
+    const end = `<text class="end" x="${(last[0] + 10).toFixed(1)}" y="${(last[1] + 4).toFixed(1)}">${score(list[n - 1])}</text>`;
+    const xhair = hover != null ? `<line class="xhair" x1="${xs(hover)}" x2="${xs(hover)}" y1="${T}" y2="${T + ph}"/>` : '';
+    return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="주별 이명 점수 그래프">
+      ${grid}<path class="area" d="${area}"/>${xhair}<path class="ln" d="${line}"/>${dots}${end}${xlab}
+      <rect class="hit" x="${L - 12}" y="${T}" width="${pw + 24}" height="${ph}" data-chart="1"/>
+    </svg>`;
+  }
+
+  function tipHtml(s) {
+    const i = s.chartHover, c = s.checkins[i], n = s.checkins.length;
+    const w = 296, L = 30, R = 34, pw = w - L - R, T = 12, ph = 168 - 12 - 28;
+    const x = L + (n === 1 ? pw / 2 : i * pw / (n - 1));
+    const y = T + (1 - score(c) / 100) * ph;
+    return `<div class="tip" style="left:calc(16px + (100% - 32px) * ${x / w}); top:calc(${16 + 46}px + ${y}px)"><b>${score(c)}점</b><span>${longDate(c.date)}</span></div>`;
+  }
+
+  function scoreSection(s) {
+    const n = s.checkins.length;
+    if (n === 0) {
+      return `<div class="card first-ci">
+        <span class="t-body b">아직 체크인이 없어요</span>
+        <span class="t-caption ink2">일주일에 한 번, 질문 3개로 이명이 어떻게 달라지는지 기록해요.</span>
+        <button class="btn btn-primary" data-act="checkin">첫 체크인 · 2분</button>
+      </div>`;
+    }
+    const due = isDue(s);
+    const sc = score(s.checkins[n - 1]);
+    const first = score(s.checkins[0]);
+    let delta = '첫 기록이에요', icon = '';
+    if (n >= 2) {
+      if (sc < first) { delta = `첫 기록보다 ${first - sc}점 낮아요`; icon = mi('arrow_downward', 'sm'); }
+      else if (sc > first) { delta = `첫 기록보다 ${sc - first}점 높아요`; icon = mi('arrow_upward', 'sm'); }
+      else delta = '첫 기록과 같아요';
+    }
+    const chart = n >= 2
+      ? `<div class="card chart-card" id="chart-card">
+          <div class="chart-head"><span class="t-label">이명 점수</span><span class="t-caption ink2">주 1회 · 질문 3개 (K-TMI)</span></div>
+          ${chartSVG(s.checkins, s.chartHover)}
+          ${s.chartHover != null ? tipHtml(s) : ''}
+        </div>`
+      : `<div class="card"><div class="empty"><p class="t-body b">두 번 이상 기록하면 변화가 그래프로 보여요</p><p class="t-caption ink2">다음 체크인은 ${longDate(nextDue(s))} ${weekday(nextDue(s))}이에요.</p></div></div>`;
+    const next = due
+      ? `<button class="btn btn-primary" data-act="checkin">이번 주 체크인 · 2분</button>`
+      : `<div class="card next-row">${mi('event')}<span class="t-body">다음 체크인 · ${longDate(nextDue(s))} ${weekday(nextDue(s))}</span></div>`;
+    const rows = [...s.checkins].reverse().map(c => `
+      <div class="hrow">
+        <span class="me-text"><span class="t-body b">${longDate(c.date)}</span><span class="t-caption ink2">크기 ${c.q1} · 인지 ${c.q2}% · 심각도 ${c.q3}</span></span>
+        <span class="score">${score(c)}점</span>
+      </div>`).join('');
+    return `<div class="card stat">
+        <span class="t-caption ink2">${due ? '최근' : '이번 주'} 이명 점수</span>
+        <span class="t-display">${sc}<span class="unit"> 점</span></span>
+        <span class="delta t-label ink2">${icon}${delta}</span>
+        <span class="t-caption ink2">0–100점 · 낮을수록 이명이 덜 느껴졌다는 뜻이에요</span>
+      </div>
+      ${chart}
+      ${next}
+      <div class="t-label ink2" style="padding-left:4px">체크인 기록</div>
+      <div class="card hist">${rows}</div>
+      <p class="t-caption ink2">지난 한 주에 대한 내 느낌을 적은 기록이에요. 진단이 아니에요.</p>`;
+  }
+
+  function scrRecords(s) {
+    return `${appBar({ back: true, title: '내 기록' })}
+    <div class="content pb">
+      ${calendarCard(s)}
+      ${scoreSection(s)}
+    </div>
+    ${s.sheet && s.sheet.day ? daySheet(s) : ''}`;
+  }
+
+  function renderScreen(s) {
+    let body;
+    if (s.screen === 'main') body = scrMain(s);
+    else if (s.screen === 'records') body = scrRecords(s);
+    else body = scrCheckin(s, Number(s.screen.slice(2)) - 1);   // ci1..ci3
+    return statusBar() + body + '<div class="gesture"></div>';
+  }
+
+  const fresh = () => ({
+    screen: 'main', sheet: null, month: NOW_MONTH, isFresh: false, still: false,
+    profile: { hz: NOTCH_HZ, loud: 28 }, sound: 'rain', notch: true,
+    playing: false, vol: 6, mix: 7,
+    checkins: SEED.map(c => Object.assign({}, c)),
+    log: seedLog(),
+    draft: { q1: null, q2: null, q3: null }, ciFrom: 'main',
+    chartHover: null,
+  });
+
+  // ---------- Prototype controller ----------
+  const view = document.getElementById('proto-view');
+  const toastEl = document.getElementById('proto-toast');
+  const speedEl = document.getElementById('speed');
+  let s = fresh();
+  let toastTimer = null;
+
+  /** Re-render, keeping the scroll position while the screen stays the same. */
+  function render() {
+    const old = view.querySelector('.content');
+    const top = old && view.dataset.screen === s.screen ? old.scrollTop : 0;
+    view.innerHTML = renderScreen(s);
+    view.dataset.screen = s.screen;
+    const c = view.querySelector('.content');
+    if (c && top) c.scrollTop = top;
+    markJump();
+  }
+  function go(screen) { s.sheet = null; s.chartHover = null; s.screen = screen; render(); }
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+  }
+  const bind = (key, text) => { const el = view.querySelector(`[data-bind="${key}"]`); if (el) el.textContent = text; };
+
+  function startSound() {
+    if (s.playing) return;
+    s.playing = true;
+    Snd.setNotch(s.notch && !!(s.profile && s.profile.hz));
+    Snd.setLevel(s.vol);
+    Snd.play(s.sound);
+  }
+  function stopSound() {
+    if (!s.playing) return;
+    s.playing = false;
+    Snd.stop();
+  }
+
+  function act(a, el) {
+    Snd.unlock();
+    switch (a) {
+      case 'play':
+        if (s.playing) stopSound(); else startSound();
+        render();
+        break;
+      case 'tile':
+        if (s.sound !== el.dataset.id) { s.sound = el.dataset.id; if (s.playing) Snd.play(s.sound); render(); }
+        break;
+      case 'notch':
+        s.notch = !s.notch; Snd.setNotch(s.notch); render();
+        break;
+      case 'refind': toast('v1의 내 이명 찾기 화면으로 가요'); break;
+      case 'noop': toast('v1과 같아요'); break;
+      case 'noop11': toast('v1.1과 같아요'); break;
+
+      case 'records': s.month = NOW_MONTH; go('records'); break;
+      case 'month': s.month = addMonth(s.month, Number(el.dataset.dir)); s.chartHover = null; render(); break;
+      case 'day': s.sheet = { day: el.dataset.day }; render(); break;
+      case 'sheet-close': s.sheet = null; render(); break;
+
+      case 'checkin':
+        s.ciFrom = s.screen;
+        s.draft = { q1: null, q2: null, q3: null };
+        go('ci1');
+        break;
+      case 'ci-next':
+        go(s.screen === 'ci1' ? 'ci2' : 'ci3');
+        break;
+      case 'ci-done':
+        s.checkins = s.checkins.filter(c => c.date !== TODAY).concat([Object.assign({ date: TODAY }, s.draft)]);
+        s.month = NOW_MONTH;
+        go('records');
+        toast('이번 주 기록했어요');
+        break;
+      case 'back': back(); break;
+    }
+  }
+
+  function back() {
+    if (s.sheet) { s.sheet = null; render(); }
+    else if (s.screen === 'records') go('main');
+    else if (s.screen === 'ci1') go(s.ciFrom === 'records' ? 'records' : 'main');
+    else if (s.screen === 'ci2') go('ci1');
+    else if (s.screen === 'ci3') go('ci2');
+  }
+
+  function onInput(k, input) {
+    const v = Number(input.value);
+    if (k === 'vol') {
+      s.vol = v;
+      Snd.setLevel(v);
+      input.style.setProperty('--p', v / VOL_MAX * 100 + '%');
+    } else if (k === 'ci') {
+      const q = QUESTIONS[Number(input.dataset.i)];
+      s.draft[q.key] = v;
+      input.classList.remove('unanswered');
+      if (q.number) {
+        input.style.setProperty('--p', (v - q.min) / (q.max - q.min) * 100 + '%');
+        bind('civ', v + q.unit);
+      }
+      const next = view.querySelector('[data-bind="cinext"]');
+      if (next) next.disabled = false;
+    }
+  }
+
+  view.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b || !view.contains(b) || b.disabled) return;
+    act(b.dataset.act, b);
+  });
+  view.addEventListener('input', e => {
+    const i = e.target.closest('[data-input]');
+    if (!i) return;
+    Snd.unlock();
+    onInput(i.dataset.input, i);
+  });
+  // Chart crosshair: nearest check-in to the pointer.
+  view.addEventListener('pointermove', e => {
+    const hit = e.target.closest('[data-chart]');
+    if (!hit) { if (s.chartHover != null && !e.target.closest('#chart-card')) { s.chartHover = null; render(); } return; }
+    const r = hit.getBoundingClientRect();
+    const n = s.checkins.length;
+    const idx = clamp(Math.round((e.clientX - r.left - r.width * 12 / (296 - 64 + 24)) / (r.width * (296 - 64) / (296 - 64 + 24)) * (n - 1)), 0, n - 1);
+    if (idx !== s.chartHover) { s.chartHover = idx; render(); }
+  });
+
+  // Listening log: while sound plays, today's entry for this sound and notch setting grows.
+  setInterval(() => {
+    if (!s.playing) return;
+    const notch = s.notch && !!(s.profile && s.profile.hz);
+    const list = s.log[TODAY] || (s.log[TODAY] = []);
+    let e = list.find(x => x.id === s.sound && x.notch === notch);
+    if (!e) list.push(e = { id: s.sound, notch, sec: 0 });
+    e.sec += speedEl.checked ? 600 : 1;
+    if (s.screen === 'records' && s.month === NOW_MONTH) { s.still = true; render(); s.still = false; }
+  }, 1000);
+
+  // Jump list
+  const JUMPS = [['main', '메인'], ['records', '내 기록'], ['day', '하루 보기'], ['sept', '지난달'], ['fresh', '처음 사용']];
+  const jumpsEl = document.getElementById('jumps');
+  jumpsEl.innerHTML = JUMPS.map(([k, l]) => `<button data-jump="${k}">${l}</button>`).join('');
+  const currentKey = () => s.isFresh ? 'fresh'
+    : s.screen === 'records' && s.sheet ? 'day'
+    : s.screen === 'records' && s.month !== NOW_MONTH ? 'sept'
+    : s.screen;
+  function markJump() { jumpsEl.querySelectorAll('[data-jump]').forEach(b => b.classList.toggle('on', b.dataset.jump === currentKey())); }
+  jumpsEl.addEventListener('click', e => {
+    const b = e.target.closest('[data-jump]');
+    if (!b) return;
+    const k = b.dataset.jump;
+    if (k === 'fresh') { stopSound(); s = Object.assign(fresh(), { isFresh: true, checkins: [], log: {} }); go('records'); return; }
+    if (s.isFresh) { stopSound(); s = fresh(); }
+    if (k === 'main') go('main');
+    else if (k === 'records') { s.month = NOW_MONTH; go('records'); }
+    else if (k === 'day') { s.month = NOW_MONTH; go('records'); s.sheet = { day: '2026-10-17' }; render(); }
+    else if (k === 'sept') { s.month = '2026-09'; go('records'); }
+  });
+  document.getElementById('reset').addEventListener('click', () => { stopSound(); s = fresh(); render(); });
+
+  if (Snd.isFile) document.getElementById('file-note').hidden = false;
+  render();
+
+  // ---------- Board ----------
+  const withWeek = () => SEED.concat([{ date: TODAY, q1: 5, q2: 70, q3: 42 }]);
+  const withToday = () => Object.assign(seedLog(), { [TODAY]: [{ id: 'rain', notch: true, sec: 35 * 60 }] });
+  const BOARD = [
+    { n: '01', t: '메인', en: 'A way into the record from anywhere',
+      st: {},
+      notes: [
+        'A calendar icon joins the app bar, next to 앱 정보. It opens 내 기록 in any week, including one where the check-in is due, which v1.1 didn\'t allow.',
+        'Nothing else on the main screen changes. Listening is recorded in the background; there is nothing to tap.',
+      ] },
+    { n: '02', t: '내 기록 · 이번 달', en: 'Listening calendar on top',
+      st: { screen: 'records', checkins: withWeek(), log: withToday() },
+      notes: [
+        'Darker days mean more listening, in three steps. Blank days are just blank, never red.',
+        'The month line counts what was done: days and total time. No goal, no streak, no percentage.',
+        'Today is outlined and fills in while sound plays. Dots mark check-in days.',
+        'The legend names the steps, so colour is never the only cue.',
+      ] },
+    { n: '03', t: '하루 보기', en: 'What was played that day',
+      st: { screen: 'records', checkins: withWeek(), log: withToday(), sheet: { day: '2026-10-14' } },
+      notes: [
+        'Tapping a day opens a sheet: each sound, whether the notch was on, and for how long, longest first.',
+        'A check-in that day shows its score and answers below.',
+        'Read-only. Listening time can\'t be edited, so the record stays what actually played.',
+      ] },
+    { n: '04', t: '하루 보기 · 안 들은 날', en: 'A day with nothing played',
+      st: { screen: 'records', checkins: withWeek(), log: withToday(), sheet: { day: '2026-10-13' } },
+      notes: [
+        'Every past day opens, so each tap gets an answer.',
+        'The wording states the fact and stops there. No "다시 시작해 보세요".',
+      ] },
+    { n: '05', t: '지난달', en: 'The first month with a record',
+      st: { screen: 'records', checkins: withWeek(), month: '2026-09' },
+      notes: [
+        '‹ and › move between months. ‹ stops at the first month with a record and › at this month, so there are no empty pages to page through.',
+        'Days before the app was installed look like any day without listening. A separate state would add nothing.',
+      ] },
+    { n: '06', t: '내 기록 · 아래쪽', en: 'Score, chart and history, scrolled',
+      st: { screen: 'records', checkins: withWeek(), log: withToday() }, scroll: 384,
+      notes: [
+        'Below the calendar, v1.1\'s score card, chart, next check-in and history are unchanged.',
+        'The history heading becomes 체크인 기록, since the whole screen is now 기록.',
+      ] },
+    { n: '07', t: '처음 사용', en: 'Nothing recorded yet',
+      st: { screen: 'records', checkins: [], log: {} },
+      notes: [
+        'The month still shows, with today outlined, and the month line says what will fill it.',
+        'With no check-in yet, the score section is one card that starts the first one.',
+      ] },
+  ];
+
+  document.getElementById('board').innerHTML = BOARD.map(f => `
+    <figure class="frame">
+      <div class="phone"><div class="viewport" inert data-scroll="${f.scroll || 0}">${renderScreen(Object.assign(fresh(), f.st))}</div></div>
+      <figcaption>
+        <div class="cap-h"><span class="cap-n">${f.n}</span><span class="cap-t">${f.t}</span></div>
+        <div class="cap-en">${f.en}</div>
+        <ul>${f.notes.map(n => `<li>${n}</li>`).join('')}</ul>
+      </figcaption>
+    </figure>`).join('');
+  document.querySelectorAll('[data-scroll]').forEach(v => {
+    const c = v.querySelector('.content');
+    if (c && Number(v.dataset.scroll)) c.scrollTop = Number(v.dataset.scroll);
+  });
+
+  function fit() {
+    const w = document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--z', Math.min(1, (w - 32) / 376).toFixed(3));
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+</body>
+</html>

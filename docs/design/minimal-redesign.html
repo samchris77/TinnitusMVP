@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minimal Redesign</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block">
+<style>
+  :root {
+    --bg: #F5F1EA;
+    --surface: #FFFFFF;
+    --ink: #1A2E2C;
+    --ink-2: #4A5C5A;
+    --muted: #8B9694;
+    --line: #E5DED2;
+    --track: #E2DCD1;
+    --teal: #2D5F5D;
+    --teal-2: #3E7A77;
+    --teal-soft: #E8F0EE;
+    --coral: #D67C5C;
+    --coral-soft: #F8E4D9;
+    --warn: #C44536;
+    --warn-soft: #F7DDD8;
+    --page: #ECE7DE;
+    --bezel: #1F2725;
+    --shadow-card: 0 1px 2px rgba(26, 46, 44, .04), 0 4px 16px rgba(26, 46, 44, .06);
+    --font: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', Roboto, sans-serif;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--page);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  button:disabled { cursor: default; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; background: rgba(26, 46, 44, .06); padding: 1px 5px; border-radius: 4px; }
+
+  .mi {
+    font-family: 'Material Icons';
+    font-weight: normal; font-style: normal;
+    font-size: 24px; line-height: 1;
+    letter-spacing: normal; text-transform: none;
+    display: inline-block; white-space: nowrap; direction: ltr;
+    font-feature-settings: 'liga'; -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+
+  /* ============ Page ============ */
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 56px 24px 120px; }
+  .eyebrow { font-size: 13px; font-weight: 600; color: var(--ink-2); letter-spacing: .2px; }
+  .page-h h1 { font-size: 40px; line-height: 1.15; letter-spacing: -.8px; margin: 8px 0 12px; }
+  .lede { font-size: 18px; color: var(--ink-2); max-width: 780px; }
+  .lede b { color: var(--ink); }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .facts span { background: var(--surface); border-radius: 100px; padding: 6px 16px; font-size: 14px; color: var(--ink-2); }
+  .facts b { color: var(--teal); font-size: 16px; margin-right: 4px; }
+
+  .wrap > section { margin-top: 80px; }
+  .wrap > section > h2 { font-size: 26px; letter-spacing: -.4px; line-height: 1.25; }
+  .wrap > section > .sub { color: var(--ink-2); margin: 8px 0 32px; max-width: 780px; }
+
+  /* Try it */
+  .try-grid { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; }
+  .try-side { flex: 1; min-width: 260px; max-width: 460px; display: flex; flex-direction: column; gap: 24px; }
+  .try-side h3 { font-size: 15px; margin-bottom: 8px; }
+  .try-side ul { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--ink-2); font-size: 15px; }
+  .try-side li b { color: var(--ink); }
+  .note-file { background: var(--coral-soft); border-radius: 12px; padding: 12px 16px; font-size: 14px; color: var(--ink); }
+  .jumps { display: flex; flex-wrap: wrap; gap: 8px; }
+  .jumps button { height: 36px; padding: 0 14px; border-radius: 100px; background: var(--surface); font-size: 14px; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .jumps button.on { background: var(--teal); color: #fff; box-shadow: none; }
+  .reset { align-self: flex-start; height: 40px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--teal); box-shadow: inset 0 0 0 1px var(--line); background: var(--surface); }
+
+  /* Flow */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .node { background: var(--surface); border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 15px; line-height: 1.3; box-shadow: var(--shadow-card); }
+  .node small { display: block; font-weight: 400; font-size: 13px; color: var(--ink-2); }
+  .node-main { background: var(--teal); color: #fff; }
+  .node-main small { color: rgba(255, 255, 255, .8); }
+  .arr { color: var(--muted); font-size: 20px; }
+  .branches { margin-top: 24px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--ink-2); max-width: 860px; }
+  .branches b { color: var(--ink); }
+
+  /* Board */
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(376px, 100%), 1fr)); gap: 64px 32px; justify-items: center; }
+  .frame { width: 100%; max-width: 376px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .frame figcaption { width: 100%; }
+  .cap-h { display: flex; align-items: baseline; gap: 8px; }
+  .cap-n { font-size: 13px; font-weight: 700; color: var(--teal); }
+  .cap-t { font-size: 18px; font-weight: 700; }
+  .cap-en { font-size: 14px; color: var(--ink-2); margin: 2px 0 10px; }
+  .frame ul { padding-left: 18px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+
+  /* Scope & rules */
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border-radius: 16px; padding: 20px 24px; box-shadow: var(--shadow-card); }
+  .panel h3 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .panel h3 .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .panel ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+  .panel li span { color: var(--ink-2); }
+  .cols + .cols { margin-top: 16px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .sw { display: flex; gap: 12px; align-items: center; font-size: 14px; }
+  .sw i { width: 44px; height: 44px; border-radius: 12px; flex: none; box-shadow: inset 0 0 0 1px rgba(26, 46, 44, .1); }
+  .sw b { display: block; font-size: 14px; }
+  .sw span { color: var(--ink-2); font-size: 13px; }
+  .type-row { display: flex; align-items: baseline; gap: 16px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .type-row:first-child { border-top: 0; }
+  .type-row .spec { width: 150px; flex: none; font-size: 13px; color: var(--ink-2); }
+  .calls { counter-reset: c; list-style: none; display: flex; flex-direction: column; gap: 12px; max-width: 900px; }
+  .calls li { counter-increment: c; background: var(--surface); border-radius: 16px; padding: 16px 20px 16px 56px; position: relative; box-shadow: var(--shadow-card); }
+  .calls li::before { content: counter(c); position: absolute; left: 20px; top: 16px; width: 24px; height: 24px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  .calls b { display: block; }
+  .calls span { color: var(--ink-2); font-size: 15px; }
+  .calls .def { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; color: var(--teal); }
+  .foot { margin-top: 40px; font-size: 14px; color: var(--ink-2); max-width: 860px; }
+
+  /* ============ Phone frame ============ */
+  .phone {
+    width: 360px; height: 780px; box-sizing: content-box;
+    border: 8px solid var(--bezel); border-radius: 44px; background: var(--bezel);
+    position: relative; overflow: hidden; flex: none;
+    box-shadow: 0 24px 60px rgba(26, 46, 44, .18);
+    zoom: var(--z, 1);
+  }
+  .viewport { position: absolute; inset: 0; border-radius: 36px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+
+  /* ============ App: structure ============ */
+  .sb { height: 32px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .sb .mi { font-size: 16px; margin-left: 4px; }
+  .appbar { height: 56px; flex: none; display: flex; align-items: center; padding: 0 4px; gap: 4px; }
+  .appbar h2 { font-size: 16px; line-height: 24px; font-weight: 600; }
+  .appbar-lg h2 { font-size: 22px; line-height: 30px; font-weight: 700; letter-spacing: -.3px; padding-left: 12px; }
+  .appbar .step { padding-right: 16px; }
+  .grow { flex: 1; }
+  .iconbtn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); flex: none; }
+  .iconbtn:active { background: rgba(26, 46, 44, .08); }
+  .content { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: none; }
+  .content::-webkit-scrollbar { display: none; }
+  .content > * { flex-shrink: 0; }
+  .content.pb { padding-bottom: 40px; }
+  .content.main { gap: 24px; }
+  .footer { flex: none; padding: 8px 16px 32px; display: flex; flex-direction: column; gap: 8px; }
+  .gesture { position: absolute; left: 50%; bottom: 8px; width: 108px; height: 4px; margin-left: -54px; border-radius: 2px; background: rgba(26, 46, 44, .35); pointer-events: none; z-index: 20; }
+  .gesture.light { background: rgba(255, 255, 255, .6); }
+
+  /* Type scale: 5 styles */
+  .t-display { font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -.5px; }
+  .t-title   { font-size: 22px; line-height: 30px; font-weight: 700; letter-spacing: -.3px; }
+  .t-body    { font-size: 16px; line-height: 24px; }
+  .t-label   { font-size: 14px; line-height: 20px; font-weight: 600; }
+  .t-caption { font-size: 13px; line-height: 18px; }
+  .b { font-weight: 600; }
+  .ink2 { color: var(--ink-2); }
+  .teal { color: var(--teal); }
+  .center { text-align: center; }
+  .head { display: flex; flex-direction: column; gap: 4px; }
+
+  /* Buttons */
+  .btn { height: 52px; width: 100%; border-radius: 12px; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; transition: transform .08s, filter .08s; flex: none; }
+  .btn:active:not(:disabled) { transform: scale(.98); filter: brightness(.95); }
+  .btn:disabled { opacity: .4; }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .btn-text { height: 48px; color: var(--teal); }
+  .btn-text:active { background: rgba(45, 95, 93, .08); transform: none; filter: none; }
+  .btn-sm { height: 40px; width: auto; padding: 0 20px; font-size: 14px; position: relative; }
+  .btn-sm::after { content: ''; position: absolute; inset: -4px 0; }
+  .btn-inline { height: 48px; padding: 0 12px; border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--teal); flex: none; }
+  .btn-inline:active { background: rgba(45, 95, 93, .08); }
+
+  /* Play button (coral = play, nothing else) */
+  .play { --size: 72px; width: var(--size); height: var(--size); border-radius: 50%; background: var(--coral); color: #fff; display: grid; place-items: center; flex: none; position: relative; box-shadow: 0 6px 18px rgba(214, 124, 92, .35); transition: transform .08s; }
+  .play .mi { font-size: calc(var(--size) * .5); }
+  .play:active { transform: scale(.95); }
+  .play.on::before { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--coral); opacity: 0; animation: pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0% { transform: scale(.92); opacity: .55; } 100% { transform: scale(1.25); opacity: 0; } }
+
+  /* Cards */
+  .card { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-card); padding: 16px; }
+  .me { display: flex; align-items: center; gap: 8px; padding: 12px 8px 12px 16px; min-height: 72px; }
+  .me-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+  /* Sound tiles */
+  .group { display: flex; flex-direction: column; gap: 8px; }
+  .glabel { padding-left: 4px; }
+  .glabel:not(:first-child) { margin-top: 8px; }
+  .tiles { display: grid; gap: 8px; }
+  .tiles-3 { grid-template-columns: repeat(3, 1fr); }
+  .tiles-4 { grid-template-columns: repeat(4, 1fr); }
+  .tile { height: 76px; border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ink); transition: transform .08s; }
+  .tile:active { transform: scale(.97); }
+  .tile .mi { color: var(--ink-2); }
+  .tile.sel { background: var(--teal-soft); box-shadow: inset 0 0 0 2px var(--teal); color: var(--teal); }
+  .tile.sel .mi { color: var(--teal); }
+  .swatch { width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(26, 46, 44, .14); }
+
+  /* Switch row (whole card is the switch) */
+  .switch-row { display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 16px; text-align: left; width: 100%; }
+  .switch-row:active:not(:disabled) { transform: scale(.99); }
+  .sw-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .switch { width: 52px; height: 32px; border-radius: 16px; background: #D9D3C8; position: relative; flex: none; transition: background .15s; }
+  .switch::after { content: ''; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); transition: transform .15s; }
+  .switch.on { background: var(--teal); }
+  .switch.on::after { transform: translateX(20px); }
+  .switch-row:disabled .switch { opacity: .45; }
+  .switch-row:disabled .sw-title { color: var(--muted); }
+
+  /* Player panel */
+  .player { flex: none; background: var(--surface); border-radius: 16px 16px 0 0; box-shadow: 0 -4px 24px rgba(26, 46, 44, .08); padding: 8px 16px 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .vol { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .vol .mi { font-size: 20px; color: var(--muted); }
+
+  /* Slider */
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 48px; background: transparent; cursor: pointer; --p: 50%; }
+  input[type=range]:focus-visible { outline: none; }
+  input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--teal) 0, var(--teal) var(--p), var(--track) var(--p), var(--track) 100%); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -9px; border-radius: 50%; background: #fff; border: 2px solid var(--teal); box-shadow: 0 1px 4px rgba(26, 46, 44, .25); }
+  input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 6px rgba(45, 95, 93, .2); }
+  input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--track); }
+  input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--teal); }
+  input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--teal); box-shadow: 0 1px 4px rgba(26, 46, 44, .25); }
+
+  /* Finder */
+  .hint-chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 100px; background: var(--surface); font-size: 13px; color: var(--ink-2); }
+  .hint-chip .mi { font-size: 18px; color: var(--teal); }
+  .readout { background: var(--teal-soft); border-radius: 16px; padding: 24px 16px 20px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .readout .play { margin-top: 12px; }
+  .slider-block { display: flex; flex-direction: column; }
+  .slider-ends { display: flex; justify-content: space-between; margin-top: -8px; padding: 0 2px; }
+  .steppers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stepbtn { height: 48px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 14px; font-weight: 600; transition: transform .08s; }
+  .stepbtn .mi { font-size: 20px; color: var(--ink-2); }
+  .stepbtn:active { transform: scale(.98); }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt { display: flex; align-items: center; gap: 12px; min-height: 72px; width: 100%; padding: 12px 16px 12px 12px; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-card); text-align: left; transition: transform .08s; }
+  .opt:active { transform: scale(.99); }
+  .opt.sel { background: var(--teal-soft); box-shadow: inset 0 0 0 2px var(--teal); }
+  .opt-play { width: 44px; height: 44px; border-radius: 50%; background: var(--coral-soft); color: var(--coral); display: grid; place-items: center; flex: none; }
+  .opt-play.on { background: var(--coral); color: #fff; }
+  .opt-text { flex: 1; display: flex; flex-direction: column; }
+  .radio { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--muted); flex: none; }
+  .opt.sel .radio { background: var(--teal); box-shadow: inset 0 0 0 2px var(--teal), inset 0 0 0 6px var(--teal-soft); }
+
+  /* Result & badges */
+  .center-top { align-items: center; text-align: center; padding-top: 32px; }
+  .badge { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+  .badge .mi { font-size: 32px; }
+  .badge.ok { background: var(--teal-soft); color: var(--teal); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; text-align: left; }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+
+  /* Welcome & safety */
+  .welcome { padding-top: 24px; }
+  .appmark { width: 48px; height: 48px; border-radius: 12px; background: var(--teal); color: #fff; display: grid; place-items: center; }
+  .appmark .mi { font-size: 28px; }
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .steps li { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 24px; }
+  .num { width: 24px; height: 24px; border-radius: 50%; background: var(--teal-soft); color: var(--teal); font-size: 13px; font-weight: 700; display: grid; place-items: center; flex: none; }
+  .safety { background: var(--warn-soft); border-radius: 16px; padding: 16px; text-align: left; }
+  .safety-h { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; line-height: 24px; margin-bottom: 8px; }
+  .safety-h .mi { color: var(--warn); font-size: 22px; }
+  .safety ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .safety li { position: relative; padding-left: 16px; font-size: 16px; line-height: 24px; }
+  .safety li::before { content: ''; position: absolute; left: 3px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+  .safety p { font-size: 16px; line-height: 24px; }
+  .q { text-align: center; margin-bottom: 4px; }
+
+  /* Sheet */
+  .scrim { position: absolute; inset: 0; background: rgba(26, 46, 44, .4); z-index: 5; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); border-radius: 16px 16px 0 0; padding: 8px 16px 40px; display: flex; flex-direction: column; gap: 16px; animation: up .2s ease-out; }
+  @keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .handle { width: 32px; height: 4px; border-radius: 2px; background: rgba(26, 46, 44, .2); align-self: center; }
+  .sheet-h { display: flex; align-items: center; justify-content: space-between; margin-right: -12px; }
+  .list { padding: 0; overflow: hidden; }
+  .row { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 56px; padding: 0 12px 0 16px; font-size: 16px; text-align: left; }
+  .row + .row { box-shadow: inset 0 1px 0 var(--line); }
+  .row:active { background: rgba(26, 46, 44, .04); }
+  .row .mi { color: var(--muted); }
+
+  /* Notification (system UI) */
+  .shade { position: absolute; inset: 0; background: linear-gradient(180deg, #33413E, #1F2725); color: #fff; display: flex; flex-direction: column; }
+  .shade .sb { color: #fff; }
+  .shade-time { font-size: 64px; font-weight: 300; letter-spacing: -1px; text-align: center; margin-top: 56px; line-height: 1; }
+  .shade-date { text-align: center; font-size: 16px; opacity: .85; margin: 12px 0 40px; }
+  .notif { margin: 0 12px; background: rgba(255, 255, 255, .96); color: var(--ink); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 2px; }
+  .notif-h { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+  .notif-ic { width: 24px; height: 24px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; }
+  .notif-ic .mi { font-size: 16px; }
+  .notif-a { display: flex; gap: 8px; margin-top: 12px; }
+  .notif-a span { display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px; border-radius: 100px; background: var(--teal-soft); color: var(--teal); font-size: 14px; font-weight: 600; }
+  .notif-a .mi { font-size: 18px; }
+
+  /* Toast */
+  .toast { position: absolute; left: 16px; right: 16px; bottom: 216px; z-index: 10; background: var(--ink); color: #fff; border-radius: 8px; padding: 12px 16px; font-size: 14px; line-height: 20px; opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: none; }
+
+  [inert] { pointer-events: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .play.on::before { animation: none; opacity: .35; transform: none; }
+    .sheet { animation: none; }
+    * { transition: none !important; }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 32px 16px 80px; }
+    .page-h h1 { font-size: 32px; }
+    .lede { font-size: 16px; }
+    .wrap > section { margin-top: 56px; }
+    .type-row { flex-direction: column; gap: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-h">
+    <p class="eyebrow">TinnitusTracker · 디자인 제안 · 2026-10-21</p>
+    <h1>Minimal redesign</h1>
+    <p class="lede">Two functions, one main screen. <b>① 내 이명 찾기</b> — find your tinnitus pitch and loudness in three short steps. <b>② 소리 듣기</b> — play white, pink or brown noise or one of four nature sounds, with or without your tinnitus pitch notched out.</p>
+    <div class="facts">
+      <span><b>1</b>main screen</span>
+      <span><b>3</b>steps to measure</span>
+      <span><b>0</b>tabs (was 4)</span>
+      <span><b>7</b>sounds</span>
+    </div>
+  </header>
+
+  <section id="try">
+    <h2>Try it</h2>
+    <p class="sub">Everything in the phone works, and it plays real sound: tones and noise are generated in the browser, and the nature sounds are the app's own files.</p>
+    <div class="try-grid">
+      <div class="phone" id="proto-phone">
+        <div class="viewport" id="proto-view"></div>
+        <div class="toast" id="proto-toast" role="status" aria-live="polite"></div>
+      </div>
+      <aside class="try-side">
+        <div>
+          <h3>Before you press play</h3>
+          <ul>
+            <li><b>Put on earphones and turn your computer volume down first.</b> The finder plays pure tones, which can be sharp at high pitch.</li>
+            <li>The first screen is the one-time safety check. "아니요, 시작할게요" opens the finder.</li>
+            <li>Touching the pitch or loudness slider starts the tone, the way the app would.</li>
+          </ul>
+        </div>
+        <p class="note-file" id="file-note" hidden>Opened as a local file, the browser won't let the notch filter process the nature sounds (noise is fine). To hear the notch on nature sounds, serve the folder: <code>python3 -m http.server 8766</code> in the <code>TinnitusMVP</code> folder, then open <code>localhost:8766/docs/design/minimal-redesign.html</code>.</p>
+        <div>
+          <h3>Jump to a screen</h3>
+          <div class="jumps" id="jumps"></div>
+        </div>
+        <button class="reset" id="reset">처음부터 다시</button>
+      </aside>
+    </div>
+  </section>
+
+  <section id="flow">
+    <h2>Flow</h2>
+    <p class="sub">First launch walks straight into the finder. After that the app opens on the main screen every time.</p>
+    <div class="flow">
+      <div class="node">첫 화면<small>안전 확인</small></div><span class="arr" aria-hidden="true">→</span>
+      <div class="node">찾기 1<small>높이</small></div><span class="arr" aria-hidden="true">→</span>
+      <div class="node">찾기 2<small>옥타브 확인</small></div><span class="arr" aria-hidden="true">→</span>
+      <div class="node">찾기 3<small>크기</small></div><span class="arr" aria-hidden="true">→</span>
+      <div class="node">결과</div><span class="arr" aria-hidden="true">→</span>
+      <div class="node node-main">메인<small>소리 듣기</small></div>
+    </div>
+    <ul class="branches">
+      <li><b>첫 화면 → 진료 안내</b> when any red flag applies. "이미 진료를 받았어요" rejoins at 찾기 1.</li>
+      <li><b>찾기 1 → 찾기 3</b> through "뚜렷한 음이 아니에요": loudness only, matched against a hiss. 이명 음 빼기 stays unavailable.</li>
+      <li><b>Back out of 찾기 1</b> lands on the main screen with nothing measured. Every sound still plays.</li>
+      <li><b>메인 → 찾기 1</b> through "다시 찾기". <b>메인 → 앱 정보</b> through the ⓘ button.</li>
+    </ul>
+  </section>
+
+  <section id="screens">
+    <h2>All screens</h2>
+    <p class="sub">Ten frames cover every screen and the states that matter: nothing measured, playing, the info sheet, and the notification that keeps sound going with the screen off.</p>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section id="scope">
+    <h2>What stays, what's new, what goes</h2>
+    <p class="sub">Compared with the current four-tab build.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3><span class="dot" style="background:var(--teal)"></span>Stays</h3>
+        <ul>
+          <li>White, pink and brown noise <span>— generated, no files</span></li>
+          <li>Four nature loops <span>— rain, waves, brook, fire</span></li>
+          <li>Notch at the tinnitus pitch</li>
+          <li>Playback with the screen off, with a notification</li>
+          <li>Pitch matching with an octave check <span>— rebuilt as steps</span></li>
+          <li>Colours and corner radii from <code>Color.kt</code> / <code>Tokens.kt</code></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="dot" style="background:var(--coral)"></span>New</h3>
+        <ul>
+          <li>Loudness matching <span>— step 3</span></li>
+          <li>Octave check as a three-way choice <span>— was a pop-up card</span></li>
+          <li>One main screen instead of 홈 + 소리</li>
+          <li>One-screen welcome with the red-flag check</li>
+          <li>Info sheet <span>— disclaimer, privacy link, contact</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="dot" style="background:var(--muted)"></span>Goes</h3>
+        <ul>
+          <li>Bottom tabs, 홈 ring and daily goal</li>
+          <li>기록: calendar, history, day sheet, quick log</li>
+          <li>TFI questionnaire</li>
+          <li>Presets and the preset picker</li>
+          <li>Mixing noise and nature at once</li>
+          <li>증폭 (amplify) mode</li>
+          <li>Sleep timer, mini player</li>
+          <li>Seven-page onboarding</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Saved on the phone</h3>
+        <ul>
+          <li><code>matched_frequency_hz</code> <span>— existing key; unset until measured</span></li>
+          <li><code>has_tonal_tinnitus</code> <span>— existing key; false after "뚜렷한 음이 아니에요"</span></li>
+          <li><code>tinnitus_loudness</code> <span>(0–100)</span>, <code>measured_at</code>, <code>sound_id</code>, <code>notch_on</code> <span>— new</span></li>
+          <li><code>onboarding_complete</code> <span>— existing key; now means the safety check was answered</span></li>
+          <li>Volume is the phone's media volume, so nothing to save</li>
+          <li>DataStore only. The Room database and its five tables go.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Audio engine work</h3>
+        <ul>
+          <li>Notch whichever sound is playing <span>— today only the white-noise base is notched (audit F1)</span></li>
+          <li>About a one-octave band-stop centred on the pitch <span>— today one biquad notch, Q 0.4</span></li>
+          <li>Real pink noise <span>— today 핑크 is a one-pole low-pass (F2)</span></li>
+          <li>Probe mode for the finder: a pure tone or a hiss, nothing else <span>— today the finder plays the therapy mix (B5)</span></li>
+          <li>Only the selected sound runs <span>— today all four nature players run at once (F4)</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="rules">
+    <h2>Design rules</h2>
+    <p class="sub">The existing tokens, used with more restraint. Every screen above follows these.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>Colour</h3>
+        <div class="swatches">
+          <div class="sw"><i style="background:var(--bg)"></i><div><b>Bg #F5F1EA</b><span>screens</span></div></div>
+          <div class="sw"><i style="background:var(--surface)"></i><div><b>Surface #FFFFFF</b><span>cards, player panel</span></div></div>
+          <div class="sw"><i style="background:var(--ink)"></i><div><b>Ink #1A2E2C</b><span>text</span></div></div>
+          <div class="sw"><i style="background:var(--ink-2)"></i><div><b>Ink-2 #4A5C5A</b><span>all secondary text</span></div></div>
+          <div class="sw"><i style="background:var(--teal)"></i><div><b>Teal #2D5F5D</b><span>main buttons, selection</span></div></div>
+          <div class="sw"><i style="background:var(--coral)"></i><div><b>Coral #D67C5C</b><span>play buttons only</span></div></div>
+          <div class="sw"><i style="background:var(--warn)"></i><div><b>Warn #C44536</b><span>safety content only</span></div></div>
+          <div class="sw"><i style="background:var(--muted)"></i><div><b>Muted #8B9694</b><span>icons and disabled only</span></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Type: five styles, system font</h3>
+        <div class="type-row"><span class="spec">Display 34 / bold</span><span class="t-display">4,000 Hz</span></div>
+        <div class="type-row"><span class="spec">Title 22 / bold</span><span class="t-title">내 이명을 찾았어요</span></div>
+        <div class="type-row"><span class="spec">Body 16 / regular, semibold for values</span><span class="t-body">막대를 움직여 맞추세요</span></div>
+        <div class="type-row"><span class="spec">Label 14 / semibold</span><span class="t-label">빗소리</span></div>
+        <div class="type-row"><span class="spec">Caption 13 / regular</span><span class="t-caption ink2">이어폰을 끼고 조용한 곳에서</span></div>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Shape and space</h3>
+        <ul>
+          <li>Cards 16, buttons and sound tiles 12, chips 8, pills 100</li>
+          <li>4-point grid: 16 at screen edges, 24 between groups, 8 between tiles</li>
+          <li>Every tap target at least 48 dp</li>
+          <li>Nothing smaller than 13 sp</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Rules</h3>
+        <ul>
+          <li>Cards get a soft shadow and no border. Selected items get a 2 dp teal ring and no shadow.</li>
+          <li>One play button component, coral, at 72 / 64 / 44 dp.</li>
+          <li>Material Icons Filled only. No emoji, no text arrows.</li>
+          <li>Grey text is always Ink-2. Muted is 2.7 : 1 on Bg, too faint for text.</li>
+          <li>Korean everywhere, in 해요체.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Compose components</h3>
+        <ul>
+          <li><code>ScreenScaffold</code> <span>— app bar, content, footer</span></li>
+          <li><code>PrimaryButton</code>, <code>SecondaryButton</code>, <code>TextButton</code></li>
+          <li><code>PlayButton(size)</code></li>
+          <li><code>SoundTile</code>, <code>SwitchRow</code>, <code>ValueReadout</code></li>
+          <li><code>AppCard</code>, <code>ChoiceRow</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="decide">
+    <h2>Your calls</h2>
+    <p class="sub">Each has a default, which is what the screens above show.</p>
+    <ol class="calls">
+      <li><b>Sleep timer</b><span>Cut. People who listen at bedtime may want sound to stop on its own. Bringing it back is one row on the main screen.</span><br><span class="def">Default: leave it out</span></li>
+      <li><b>One sound at a time</b><span>No mixing, for example pink noise under rain.</span><br><span class="def">Default: one at a time</span></li>
+      <li><b>Safety check on the first screen</b><span>The only thing here you didn't ask for. It's in because <code>docs/clinical/red-flags.md</code> requires it and Play's health-app policy expects it. It costs one tap.</span><br><span class="def">Default: keep</span></li>
+      <li><b>Notch on after measuring</b><span>Saving a measurement turns 이명 음 빼기 on. People can turn it off.</span><br><span class="def">Default: on</span></li>
+      <li><b>Ear choice in the finder</b><span>Tones play in both ears. Choosing left, right or both is cut.</span><br><span class="def">Default: both ears</span></li>
+      <li><b>App name</b><span>"이명 사운드" is a placeholder. The name and the application id must be final before the first upload.</span><br><span class="def">Default: none, you pick</span></li>
+    </ol>
+    <p class="foot">All Korean safety, disclaimer and listening-hint wording is a draft for your review, as the wiki requires for patient-facing text.</p>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- Content ----------
+  const HZ_MIN = 250, HZ_MAX = 16000;
+  const SOUND_DIR = '../../app/src/main/res/raw/';
+  const PITCH_LEVEL = Math.pow(10, -32 / 20);   // fixed, quiet tone for steps 1–2
+  const NATURE_TRIM = 2;   // the app's loops sit at about −26 dBFS; ×2 matches the −20 dBFS noise here
+
+  const SOUNDS = [
+    { id: 'white', name: '화이트', full: '화이트 노이즈', group: 'noise', swatch: '#FFFFFF' },
+    { id: 'pink',  name: '핑크',   full: '핑크 노이즈',   group: 'noise', swatch: '#EBB7B1' },
+    { id: 'brown', name: '브라운', full: '브라운 노이즈', group: 'noise', swatch: '#8C664D' },
+    { id: 'rain',  name: '빗소리', full: '빗소리', group: 'nature', icon: 'umbrella', file: 'rain.m4a' },
+    { id: 'waves', name: '파도',   full: '파도',   group: 'nature', icon: 'waves', file: 'waves.m4a' },
+    { id: 'brook', name: '시냇물', full: '시냇물', group: 'nature', icon: 'water_drop', file: 'brook.m4a' },
+    { id: 'fire',  name: '모닥불', full: '모닥불', group: 'nature', icon: 'local_fire_department', file: 'fire.m4a' },
+  ];
+  const soundById = id => SOUNDS.find(x => x.id === id);
+
+  const FLAGS = [
+    '한쪽 귀에서만 들려요',
+    '맥박처럼 쿵쿵 뛰는 소리가 들려요',
+    '어지럽거나 몸의 균형이 흔들려요',
+    '갑자기 잘 안 들리게 됐어요',
+    '얼굴 저림, 힘 빠짐, 심한 두통이 함께 있어요',
+  ];
+
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const roundHz = hz => hz < 1000 ? Math.round(hz / 5) * 5 : Math.round(hz / 10) * 10;
+  const fmtHz = hz => Math.round(hz).toLocaleString('ko-KR') + ' Hz';
+  const pitchWord = hz => hz < 500 ? '낮은 음' : hz < 2000 ? '중간 음' : hz < 8000 ? '높은 음' : '아주 높은 음';
+  const hzToPos = hz => Math.log(hz / HZ_MIN) / Math.log(HZ_MAX / HZ_MIN);
+  const posToHz = p => HZ_MIN * Math.pow(HZ_MAX / HZ_MIN, p);
+  const loudGain = v => v <= 0 ? 0 : Math.pow(10, (-72 + 0.57 * v) / 20);   // 1 → −71 dB, 100 → −15 dB
+  const mi = (name, cls = '') => `<span class="mi ${cls}" aria-hidden="true">${name}</span>`;
+
+  // ---------- Audio (prototype only) ----------
+  const Snd = (() => {
+    const isFile = location.protocol === 'file:';
+    let ctx = null, master, dry, wet, bsIn, probeOsc, probeGain, probeNoiseGain, probeNoiseSrc = null;
+    const lps = [], hps = [], buffers = {}, media = {};
+    let cur = null, probeKind = null, volume = 40, notchOn = false, notchHz = null;
+    const dB = x => Math.pow(10, x / 20);
+    const volGain = v => v <= 0 ? 0 : dB(-40 + 0.4 * v);
+    const elVol = () => clamp(volGain(volume) * NATURE_TRIM, 0, 1);
+    const to = (param, v, tc = 0.03) => param.setTargetAtTime(v, ctx.currentTime, tc);
+
+    function unlock() {
+      try {
+        if (!ctx) { ctx = new (window.AudioContext || window.webkitAudioContext)(); build(); }
+        if (ctx.state === 'suspended') ctx.resume();
+      } catch (e) { console.warn('Web Audio unavailable', e); }
+      return !!ctx;
+    }
+
+    function build() {
+      master = ctx.createGain(); master.gain.value = volGain(volume); master.connect(ctx.destination);
+      dry = ctx.createGain(); wet = ctx.createGain(); dry.connect(master); wet.connect(master);
+      // Band-stop = low-pass branch + high-pass branch, each 4 × 2nd order,
+      // corners 0.6 octave either side of the pitch → roughly a one-octave hole.
+      bsIn = ctx.createGain();
+      let n = bsIn;
+      for (let i = 0; i < 4; i++) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = Math.SQRT1_2; n.connect(f); n = f; lps.push(f); }
+      n.connect(wet);
+      n = bsIn;
+      for (let i = 0; i < 4; i++) { const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.Q.value = Math.SQRT1_2; n.connect(f); n = f; hps.push(f); }
+      n.connect(wet);
+      probeGain = ctx.createGain(); probeGain.gain.value = 0; probeGain.connect(ctx.destination);
+      probeOsc = ctx.createOscillator(); probeOsc.type = 'sine'; probeOsc.frequency.value = 1000;
+      probeOsc.connect(probeGain); probeOsc.start();
+      probeNoiseGain = ctx.createGain(); probeNoiseGain.gain.value = 0; probeNoiseGain.connect(ctx.destination);
+      applyNotch(true);
+    }
+
+    function applyNotch(instant) {
+      if (!ctx) return;
+      const ny = ctx.sampleRate / 2 * 0.95;
+      if (notchHz) {
+        const lo = Math.min(ny, notchHz * Math.pow(2, -0.6));
+        const hi = Math.min(ny, notchHz * Math.pow(2, 0.6));
+        lps.forEach(f => instant ? (f.frequency.value = lo) : to(f.frequency, lo, 0.02));
+        hps.forEach(f => instant ? (f.frequency.value = hi) : to(f.frequency, hi, 0.02));
+      }
+      const on = notchOn && !!notchHz;
+      if (instant) { dry.gain.value = on ? 0 : 1; wet.gain.value = on ? 1 : 0; }
+      else { to(dry.gain, on ? 0 : 1); to(wet.gain, on ? 1 : 0); }
+    }
+
+    function makeNoise(kind) {
+      const sr = ctx.sampleRate, N = Math.floor(sr * 8), F = Math.floor(sr * 0.5);
+      const a = new Float32Array(N + F);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, br = 0;
+      for (let i = 0; i < N + F; i++) {
+        const w = Math.random() * 2 - 1;
+        if (kind === 'white') a[i] = w;
+        else if (kind === 'pink') {   // Paul Kellet's refined filter, −3 dB/octave
+          b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759;
+          b2 = 0.96900 * b2 + w * 0.1538520; b3 = 0.86650 * b3 + w * 0.3104856;
+          b4 = 0.55000 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.0168980;
+          a[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362; b6 = w * 0.115926;
+        } else { br = (br + 0.02 * w) / 1.02; a[i] = br; }   // brown, −6 dB/octave
+      }
+      const buf = ctx.createBuffer(1, N, sr), d = buf.getChannelData(0);
+      for (let i = 0; i < N; i++) d[i] = a[i];
+      for (let i = 0; i < F; i++) { const t = i / F; d[i] = a[i] * Math.sqrt(t) + a[N + i] * Math.sqrt(1 - t); }  // seamless loop
+      let sum = 0; for (let i = 0; i < N; i++) sum += d[i] * d[i];
+      const k = 0.1 / Math.sqrt(sum / N);   // all three at the same RMS
+      for (let i = 0; i < N; i++) d[i] *= k;
+      return buf;
+    }
+
+    function makeSource(id) {
+      const s = soundById(id);
+      if (s.group === 'noise') {
+        buffers[id] = buffers[id] || makeNoise(id);
+        const src = ctx.createBufferSource(); src.buffer = buffers[id]; src.loop = true;
+        return { id, node: src, el: null, trim: 1, start: () => src.start(), stop: () => { try { src.stop(); } catch (e) { /* already stopped */ } } };
+      }
+      const m = media[id] || (media[id] = { el: new Audio(SOUND_DIR + s.file), node: null });
+      m.el.loop = true;
+      if (!isFile && !m.node) { try { m.node = ctx.createMediaElementSource(m.el); } catch (e) { console.warn(e); } }
+      return { id, node: m.node, el: m.el, trim: NATURE_TRIM, start: () => m.el.play().catch(e => console.warn(e)), stop: () => m.el.pause() };
+    }
+
+    function play(id) {
+      if (!unlock()) return;
+      if (cur && cur.id === id) return;
+      const old = cur;
+      const src = makeSource(id);
+      const g = ctx.createGain(); g.gain.value = 0;
+      if (src.node) { src.node.connect(g); g.connect(dry); g.connect(bsIn); to(g.gain, src.trim, 0.08); }
+      else src.el.volume = elVol();
+      src.start();
+      cur = Object.assign({}, src, { g });
+      if (old) retire(old);
+    }
+
+    function retire(o) {
+      if (!o.node) { if (!(cur && cur.el === o.el)) o.stop(); return; }
+      to(o.g.gain, 0, 0.08);
+      setTimeout(() => {
+        try { o.node.disconnect(o.g); } catch (e) { /* already gone */ }
+        o.g.disconnect();
+        if (!(cur && o.el && cur.el === o.el)) o.stop();
+      }, 450);
+    }
+
+    function stop() { if (cur) { const o = cur; cur = null; retire(o); } }
+
+    function setVolume(v) {
+      volume = v;
+      if (!ctx) return;
+      to(master.gain, volGain(v), 0.04);
+      if (cur && !cur.node && cur.el) cur.el.volume = elVol();
+    }
+
+    function setNotch(on, hz) { notchOn = !!on; if (hz) notchHz = hz; applyNotch(false); }
+
+    function probe(kind, hz, level) {
+      if (!unlock()) return;
+      probeKind = kind;
+      if (kind === 'tone') {
+        to(probeNoiseGain.gain, 0);
+        probeOsc.frequency.setTargetAtTime(hz, ctx.currentTime, 0.01);
+        to(probeGain.gain, level);
+      } else {
+        if (!probeNoiseSrc) {
+          buffers.white = buffers.white || makeNoise('white');
+          probeNoiseSrc = ctx.createBufferSource(); probeNoiseSrc.buffer = buffers.white; probeNoiseSrc.loop = true;
+          probeNoiseSrc.connect(probeNoiseGain); probeNoiseSrc.start();
+        }
+        to(probeGain.gain, 0);
+        to(probeNoiseGain.gain, level * 5);
+      }
+    }
+    function probeHz(hz) { if (ctx) probeOsc.frequency.setTargetAtTime(hz, ctx.currentTime, 0.01); }
+    function probeLevel(level) {
+      if (!ctx || !probeKind) return;
+      if (probeKind === 'tone') to(probeGain.gain, level); else to(probeNoiseGain.gain, level * 5);
+    }
+    function probeOff() { probeKind = null; if (!ctx) return; to(probeGain.gain, 0); to(probeNoiseGain.gain, 0); }
+
+    return { isFile, unlock, play, stop, setVolume, setNotch, probe, probeHz, probeLevel, probeOff };
+  })();
+
+  // ---------- Screens ----------
+  function statusBar() {
+    return `<div class="sb"><span>9:41</span><span>${mi('signal_cellular_alt')}${mi('wifi')}${mi('battery_full')}</span></div>`;
+  }
+
+  function appBar({ back = false, title = '', right = '', large = false, info = false } = {}) {
+    return `<header class="appbar ${large ? 'appbar-lg' : ''}">
+      ${back ? `<button class="iconbtn" data-act="back" aria-label="뒤로">${mi('arrow_back')}</button>` : ''}
+      ${title ? `<h2>${title}</h2>` : ''}
+      <span class="grow"></span>
+      ${right ? `<span class="t-caption ink2 step">${right}</span>` : ''}
+      ${info ? `<button class="iconbtn" data-act="info" aria-label="앱 정보">${mi('info')}</button>` : ''}
+    </header>`;
+  }
+
+  function playBtn(on, act, size, labels = ['재생', '일시정지']) {
+    return `<button class="play ${on ? 'on' : ''}" style="--size:${size}px" data-act="${act}" aria-label="${on ? labels[1] : labels[0]}">${mi(on ? 'pause' : 'play_arrow')}</button>`;
+  }
+
+  function safetyBox(title) {
+    return `<section class="safety"><div class="safety-h">${mi('warning')}<span>${title}</span></div>
+      <ul>${FLAGS.map(f => `<li>${f}</li>`).join('')}</ul></section>`;
+  }
+
+  function scrWelcome() {
+    return `<div class="content welcome">
+      <div class="appmark">${mi('graphic_eq')}</div>
+      <div class="head">
+        <h1 class="t-title">이명 사운드</h1>
+        <p class="t-body ink2">내 이명에 맞춘 소리를 들려드려요.</p>
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span><span>내 이명의 높이와 크기를 찾아요</span></li>
+        <li><span class="num">2</span><span>노이즈나 자연음을 들어요. 내 이명 음만 빼고 들을 수도 있어요.</span></li>
+      </ol>
+      ${safetyBox('이런 경우엔 먼저 진료를 받으세요')}
+      <p class="t-caption ink2">이 앱은 의료기기가 아니며, 이명을 진단하거나 치료하지 않아요.</p>
+    </div>
+    <div class="footer">
+      <p class="t-label q">위에 해당하는 게 있나요?</p>
+      <button class="btn btn-primary" data-act="safety-no">아니요, 시작할게요</button>
+      <button class="btn btn-secondary" data-act="safety-yes">네, 해당돼요</button>
+    </div>`;
+  }
+
+  function scrReferral() {
+    return `${appBar({ back: true })}
+    <div class="content center-top">
+      <div class="badge warn">${mi('local_hospital')}</div>
+      <div class="head">
+        <h1 class="t-title">먼저 이비인후과 진료를<br>받아보세요</h1>
+        <p class="t-body ink2">이런 증상은 다른 원인이 있는지 먼저 확인해야 해요.</p>
+      </div>
+      <div class="safety"><p><b>갑자기 잘 안 들리게 됐다면</b> 바로 이비인후과나 응급실에 가세요. 며칠 안에 치료를 시작해야 청력을 지킬 수 있어요.</p></div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-secondary" data-act="referral-continue">이미 진료를 받았어요</button>
+    </div>`;
+  }
+
+  function scrM1(s) {
+    const p = hzToPos(s.hz) * 100;
+    return `${appBar({ back: true, title: '내 이명 찾기', right: '1 / 3' })}
+    <div class="content">
+      <div class="head">
+        <h1 class="t-title">이명과 같은 높이를 찾아요</h1>
+        <p class="t-body ink2">막대를 움직여 이명과 가장 비슷한 높이에 맞추세요.</p>
+      </div>
+      <div class="hint-chip">${mi('headphones')}이어폰을 끼고 조용한 곳에서</div>
+      <div class="readout">
+        <div class="t-display teal" data-bind="hz">${fmtHz(s.hz)}</div>
+        <div class="t-caption ink2" data-bind="hzword">${pitchWord(s.hz)}</div>
+        ${playBtn(s.toneOn, 'tone-toggle', 64, ['소리 켜기', '소리 끄기'])}
+      </div>
+      <div class="slider-block">
+        <input type="range" min="0" max="1000" step="1" value="${Math.round(p * 10)}" style="--p:${p}%" data-input="hz" aria-label="이명 높이">
+        <div class="slider-ends t-caption ink2"><span>낮은 음</span><span>높은 음</span></div>
+      </div>
+      <div class="steppers">
+        <button class="stepbtn" data-act="hz-step" data-dir="-1">${mi('remove')}조금 낮게</button>
+        <button class="stepbtn" data-act="hz-step" data-dir="1">${mi('add')}조금 높게</button>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-text" data-act="non-tonal">뚜렷한 음이 아니에요</button>
+      <button class="btn btn-primary" data-act="m1-next">다음</button>
+    </div>`;
+  }
+
+  function scrM2(s) {
+    const names = { '-1': '더 낮은 음', '0': '찾은 음', '1': '더 높은 음' };
+    const opts = [-1, 0, 1]
+      .map(d => ({ d, hz: roundHz(s.hz * Math.pow(2, d)) }))
+      .filter(o => o.hz >= HZ_MIN && o.hz <= HZ_MAX);
+    return `${appBar({ back: true, title: '내 이명 찾기', right: '2 / 3' })}
+    <div class="content">
+      <div class="head">
+        <h1 class="t-title">한 번 더 확인해요</h1>
+        <p class="t-body ink2">한 옥타브 높거나 낮은 음과 헷갈리기 쉬워요. 하나씩 눌러 듣고 가장 비슷한 것을 고르세요.</p>
+      </div>
+      <div class="opts" role="radiogroup" aria-label="가장 비슷한 높이">
+        ${opts.map(o => {
+          const sel = s.octave === o.d, on = s.playingOpt === o.d;
+          return `<button class="opt ${sel ? 'sel' : ''}" role="radio" aria-checked="${sel}" data-act="opt" data-dir="${o.d}">
+            <span class="opt-play ${on ? 'on' : ''}">${mi(on ? 'graphic_eq' : 'play_arrow')}</span>
+            <span class="opt-text"><span class="t-body b">${names[o.d]}</span><span class="t-caption ink2">${fmtHz(o.hz)}</span></span>
+            <span class="radio"></span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-primary" data-act="m2-next">다음</button>
+    </div>`;
+  }
+
+  function scrM3(s) {
+    return `${appBar({ back: true, title: '내 이명 찾기', right: '3 / 3' })}
+    <div class="content">
+      <div class="head">
+        <h1 class="t-title">이명과 같은 크기로 맞춰요</h1>
+        <p class="t-body ink2">작은 소리부터 시작해요. 이명과 크기가 같아지면 멈추세요.</p>
+      </div>
+      <div class="readout">
+        <div class="t-display teal" data-bind="loud">${s.loud}</div>
+        <div class="t-caption ink2">${s.nonTonal ? '쉬— 하는 소리' : fmtHz(s.hz) + ' 소리'}</div>
+        ${playBtn(s.toneOn, 'tone-toggle', 64, ['소리 켜기', '소리 끄기'])}
+      </div>
+      <div class="slider-block">
+        <input type="range" min="0" max="100" step="1" value="${s.loud}" style="--p:${s.loud}%" data-input="loud" aria-label="이명 크기">
+        <div class="slider-ends t-caption ink2"><span>작게</span><span>크게</span></div>
+      </div>
+      <div class="steppers">
+        <button class="stepbtn" data-act="loud-step" data-dir="-1">${mi('remove')}조금 작게</button>
+        <button class="stepbtn" data-act="loud-step" data-dir="1">${mi('add')}조금 크게</button>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-primary" data-act="m3-done" ${s.loud > 0 ? '' : 'disabled'}>완료</button>
+    </div>`;
+  }
+
+  function scrResult(s) {
+    return `${appBar({ back: true, title: '내 이명 찾기' })}
+    <div class="content center-top">
+      <div class="badge ok">${mi('check')}</div>
+      <h1 class="t-title">내 이명을 찾았어요</h1>
+      <div class="stats">
+        <div class="card stat">
+          <span class="t-caption ink2">높이</span>
+          <span class="t-title">${s.nonTonal ? '—' : fmtHz(s.hz)}</span>
+          <span class="t-caption ink2">${s.nonTonal ? '뚜렷한 음 없음' : pitchWord(s.hz)}</span>
+        </div>
+        <div class="card stat">
+          <span class="t-caption ink2">크기</span>
+          <span class="t-title">${s.loud}</span>
+          <span class="t-caption ink2">0–100 기준</span>
+        </div>
+      </div>
+      <p class="t-caption ink2">크기는 지금 쓰는 이어폰과 휴대폰 볼륨 기준이에요. 다음에도 같은 조건에서 재야 비교할 수 있어요.</p>
+    </div>
+    <div class="footer">
+      <button class="btn btn-text" data-act="redo">다시 하기</button>
+      <button class="btn btn-primary" data-act="save">저장하고 소리 듣기</button>
+    </div>`;
+  }
+
+  function tile(x, s) {
+    const sel = s.sound === x.id;
+    const visual = x.group === 'noise' ? `<span class="swatch" style="background:${x.swatch}"></span>` : mi(x.icon);
+    return `<button class="tile ${sel ? 'sel' : ''}" data-act="tile" data-id="${x.id}" aria-pressed="${sel}" aria-label="${x.full}">${visual}<span>${x.name}</span></button>`;
+  }
+
+  function scrMain(s) {
+    const sv = s.saved;
+    const canNotch = !!(sv && sv.hz);
+    const meVal = !sv ? '' : (sv.hz ? `${fmtHz(sv.hz)} · 크기 ${sv.loud}` : `뚜렷한 음 없음 · 크기 ${sv.loud}`);
+    const notchSub = canNotch ? `${fmtHz(sv.hz)} 주변을 비우고 들려줘요`
+      : sv ? '뚜렷한 음이 없으면 쓸 수 없어요' : '내 이명을 찾으면 쓸 수 있어요';
+    const notchOn = s.notch && canNotch;
+    return `${appBar({ title: '이명 사운드', large: true, info: true })}
+    <div class="content main">
+      <div class="card me">
+        <div class="me-text">
+          <span class="t-caption ink2">내 이명</span>
+          <span class="t-body ${sv ? 'b' : 'ink2'}">${sv ? meVal : '아직 찾지 않았어요'}</span>
+        </div>
+        ${sv ? `<button class="btn-inline" data-act="find">다시 찾기</button>`
+             : `<button class="btn btn-primary btn-sm" data-act="find">찾기</button>`}
+      </div>
+      <div class="group">
+        <div class="t-caption ink2 glabel">노이즈</div>
+        <div class="tiles tiles-3">${SOUNDS.filter(x => x.group === 'noise').map(x => tile(x, s)).join('')}</div>
+        <div class="t-caption ink2 glabel">자연음</div>
+        <div class="tiles tiles-4">${SOUNDS.filter(x => x.group === 'nature').map(x => tile(x, s)).join('')}</div>
+      </div>
+      <button class="card switch-row" role="switch" aria-checked="${notchOn}" data-act="notch" ${canNotch ? '' : 'disabled'}>
+        <span class="sw-text"><span class="t-body b sw-title">이명 음 빼기</span><span class="t-caption ink2">${notchSub}</span></span>
+        <span class="switch ${notchOn ? 'on' : ''}"></span>
+      </button>
+    </div>
+    <div class="player">
+      <div class="vol">${mi('volume_down')}<input type="range" min="0" max="100" step="1" value="${s.volume}" style="--p:${s.volume}%" data-input="vol" aria-label="볼륨">${mi('volume_up')}</div>
+      ${playBtn(s.playing, 'play', 72)}
+      <p class="t-caption ink2 center">이명이 다 묻히지 않을 만큼, 편안한 크기로 들으세요.</p>
+    </div>
+    ${s.sheet === 'info' ? sheetInfo() : ''}`;
+  }
+
+  function sheetInfo() {
+    return `<div class="scrim" data-act="sheet-close"></div>
+    <div class="sheet" role="dialog" aria-label="앱 정보">
+      <div class="handle"></div>
+      <div class="sheet-h"><h2 class="t-title">앱 정보</h2><button class="iconbtn" data-act="sheet-close" aria-label="닫기">${mi('close')}</button></div>
+      <p class="t-body ink2">이 앱은 의료기기가 아니에요. 이명을 진단하거나 치료하지 않아요. 이명이 갑자기 생기거나 달라지면 이비인후과 진료를 받으세요.</p>
+      <div class="card list">
+        <button class="row" data-act="flags"><span>진료가 먼저 필요한 경우</span>${mi('chevron_right')}</button>
+        <button class="row" data-act="privacy"><span>개인정보 처리방침</span>${mi('chevron_right')}</button>
+        <button class="row" data-act="contact"><span>문의하기</span>${mi('chevron_right')}</button>
+      </div>
+      <p class="t-caption ink2">모든 정보는 이 휴대폰에만 저장돼요 · 버전 1.0.0</p>
+    </div>`;
+  }
+
+  function scrFlags() {
+    return `${appBar({ back: true, title: '진료가 먼저 필요한 경우' })}
+    <div class="content pb">
+      ${safetyBox('이런 경우엔 먼저 진료를 받으세요')}
+      <p class="t-body ink2">하나라도 해당하면 이비인후과 진료를 받으세요. 갑자기 잘 안 들리게 됐다면 바로 가세요.</p>
+    </div>`;
+  }
+
+  function scrNotification() {
+    return `<div class="shade">
+      ${statusBar()}
+      <div class="shade-time">9:41</div>
+      <div class="shade-date">10월 21일 수요일</div>
+      <div class="notif">
+        <div class="notif-h"><span class="notif-ic">${mi('graphic_eq')}</span><span>이명 사운드 · 지금</span></div>
+        <div class="t-body b">핑크 노이즈</div>
+        <div class="t-caption ink2">이명 음 빼기 켜짐 · 4,000 Hz</div>
+        <div class="notif-a"><span>${mi('pause')}일시정지</span><span>${mi('close')}끄기</span></div>
+      </div>
+    </div>`;
+  }
+
+  const SCREENS = { welcome: scrWelcome, referral: scrReferral, m1: scrM1, m2: scrM2, m3: scrM3, result: scrResult, main: scrMain, flags: scrFlags };
+
+  function renderScreen(s) {
+    if (s.screen === 'notification') return scrNotification() + '<div class="gesture light"></div>';
+    return statusBar() + SCREENS[s.screen](s) + '<div class="gesture"></div>';
+  }
+
+  const fresh = () => ({
+    screen: 'welcome', sheet: null,
+    hz: 2000, toneOn: false, octave: 0, playingOpt: null, loud: 0, nonTonal: false,
+    saved: null, sound: 'pink', notch: false, volume: 40, playing: false,
+  });
+
+  // ---------- Prototype controller ----------
+  const view = document.getElementById('proto-view');
+  const toastEl = document.getElementById('proto-toast');
+  let s = fresh();
+  let optTimer = null, toastTimer = null;
+
+  function render() { view.innerHTML = renderScreen(s); markJump(); }
+
+  function go(patch) {
+    stopOpt(); probeOff();
+    Object.assign(s, { sheet: null }, patch);
+    render();
+  }
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+  }
+
+  const setHz = hz => { s.hz = clamp(roundHz(hz), HZ_MIN, HZ_MAX); };
+  const setLoud = v => { s.loud = clamp(Math.round(v), 0, 100); };
+
+  function probeOn() {
+    s.toneOn = true;
+    if (s.screen === 'm3') Snd.probe(s.nonTonal ? 'noise' : 'tone', s.hz, loudGain(s.loud));
+    else Snd.probe('tone', s.hz, PITCH_LEVEL);
+  }
+  function probeOff() { s.toneOn = false; Snd.probeOff(); }
+
+  function patchPlay() {
+    const b = view.querySelector('[data-act="tone-toggle"]');
+    if (!b) return;
+    b.classList.toggle('on', s.toneOn);
+    b.querySelector('.mi').textContent = s.toneOn ? 'pause' : 'play_arrow';
+    b.setAttribute('aria-label', s.toneOn ? '소리 끄기' : '소리 켜기');
+  }
+  function bind(key, text) { const el = view.querySelector(`[data-bind="${key}"]`); if (el) el.textContent = text; }
+
+  function playOpt(d) {
+    s.octave = d; s.playingOpt = d;
+    Snd.probe('tone', roundHz(s.hz * Math.pow(2, d)), PITCH_LEVEL);
+    clearTimeout(optTimer);
+    optTimer = setTimeout(() => {
+      Snd.probeOff();
+      if (s.playingOpt === d) { s.playingOpt = null; if (s.screen === 'm2') render(); }
+    }, 2000);
+    render();
+  }
+  function stopOpt() { clearTimeout(optTimer); s.playingOpt = null; }
+
+  function back() {
+    const to = { referral: 'welcome', m1: 'main', m2: 'm1', m3: s.nonTonal ? 'm1' : 'm2', result: 'm3', flags: 'main' }[s.screen];
+    if (to) go({ screen: to });
+  }
+
+  function act(a, el) {
+    Snd.unlock();
+    switch (a) {
+      case 'safety-no':
+      case 'referral-continue': go({ screen: 'm1', nonTonal: false }); break;
+      case 'safety-yes': go({ screen: 'referral' }); break;
+      case 'back': back(); break;
+      case 'tone-toggle': s.toneOn ? probeOff() : probeOn(); patchPlay(); break;
+      case 'hz-step': setHz(s.hz * Math.pow(2, Number(el.dataset.dir) / 12)); probeOn(); render(); break;
+      case 'non-tonal': go({ screen: 'm3', nonTonal: true, loud: 0 }); break;
+      case 'm1-next': go({ screen: 'm2', nonTonal: false, octave: 0 }); break;
+      case 'opt': playOpt(Number(el.dataset.dir)); break;
+      case 'm2-next': setHz(s.hz * Math.pow(2, s.octave)); go({ screen: 'm3', octave: 0, loud: 0 }); break;
+      case 'loud-step': setLoud(s.loud + Number(el.dataset.dir) * 2); probeOn(); render(); break;
+      case 'm3-done': go({ screen: 'result' }); break;
+      case 'redo': go({ screen: 'm1', nonTonal: false, loud: 0 }); break;
+      case 'save':
+        s.saved = { hz: s.nonTonal ? null : s.hz, loud: s.loud };
+        s.notch = !s.nonTonal;
+        Snd.setNotch(s.notch, s.saved.hz);
+        go({ screen: 'main' });
+        toast('내 이명을 저장했어요');
+        break;
+      case 'find':
+        if (s.playing) { s.playing = false; Snd.stop(); }
+        go({ screen: 'm1', hz: (s.saved && s.saved.hz) || 2000, nonTonal: false, loud: 0 });
+        break;
+      case 'tile':
+        if (s.sound !== el.dataset.id) { s.sound = el.dataset.id; if (s.playing) Snd.play(s.sound); render(); }
+        break;
+      case 'notch': s.notch = !s.notch; Snd.setNotch(s.notch, s.saved && s.saved.hz); render(); break;
+      case 'play':
+        s.playing = !s.playing;
+        if (s.playing) {
+          Snd.setVolume(s.volume);
+          Snd.setNotch(s.notch && !!(s.saved && s.saved.hz), s.saved && s.saved.hz);
+          Snd.play(s.sound);
+        } else Snd.stop();
+        render();
+        break;
+      case 'info': s.sheet = 'info'; render(); break;
+      case 'sheet-close': s.sheet = null; render(); break;
+      case 'flags': go({ screen: 'flags' }); break;
+      case 'privacy':
+      case 'contact': toast('프로토타입: 링크가 들어갈 자리예요'); break;
+    }
+  }
+
+  function onInput(k, input) {
+    const v = Number(input.value);
+    if (k === 'hz') {
+      setHz(posToHz(v / 1000));
+      if (s.toneOn) Snd.probeHz(s.hz); else { probeOn(); patchPlay(); }
+      input.style.setProperty('--p', (v / 10) + '%');
+      bind('hz', fmtHz(s.hz)); bind('hzword', pitchWord(s.hz));
+    } else if (k === 'loud') {
+      setLoud(v);
+      if (s.toneOn) Snd.probeLevel(loudGain(s.loud)); else { probeOn(); patchPlay(); }
+      input.style.setProperty('--p', v + '%');
+      bind('loud', s.loud);
+      const done = view.querySelector('[data-act="m3-done"]');
+      if (done) done.disabled = s.loud === 0;
+    } else if (k === 'vol') {
+      s.volume = v;
+      Snd.setVolume(v);
+      input.style.setProperty('--p', v + '%');
+    }
+  }
+
+  view.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b || !view.contains(b) || b.disabled) return;
+    act(b.dataset.act, b);
+  });
+  view.addEventListener('input', e => {
+    const i = e.target.closest('[data-input]');
+    if (!i) return;
+    Snd.unlock();
+    onInput(i.dataset.input, i);
+  });
+
+  // Jump list
+  const JUMPS = [
+    ['welcome', '첫 화면'], ['referral', '진료 안내'], ['m1', '찾기 1 · 높이'], ['m2', '찾기 2 · 확인'],
+    ['m3', '찾기 3 · 크기'], ['result', '결과'], ['main-empty', '메인 · 처음'], ['main', '메인 · 저장 후'], ['info', '앱 정보'],
+  ];
+  const jumpsEl = document.getElementById('jumps');
+  jumpsEl.innerHTML = JUMPS.map(([k, label]) => `<button data-jump="${k}">${label}</button>`).join('');
+  const currentKey = () => s.screen !== 'main' ? s.screen : s.sheet === 'info' ? 'info' : s.saved ? 'main' : 'main-empty';
+  function markJump() { jumpsEl.querySelectorAll('[data-jump]').forEach(b => b.classList.toggle('on', b.dataset.jump === currentKey())); }
+
+  function jump(k) {
+    Snd.stop(); s.playing = false;
+    if (k === 'main-empty') { s.saved = null; s.notch = false; go({ screen: 'main' }); return; }
+    if (k === 'main' || k === 'info') {
+      if (!s.saved) s.saved = { hz: 4000, loud: 32 };
+      s.notch = !!s.saved.hz;
+      Snd.setNotch(s.notch, s.saved.hz);
+      go({ screen: 'main' });
+      if (k === 'info') { s.sheet = 'info'; render(); }
+      return;
+    }
+    if ((k === 'm3' || k === 'result') && s.hz === 2000) s.hz = 4000;
+    if (k === 'result' && !s.loud) s.loud = 32;
+    go({ screen: k, nonTonal: false });
+  }
+  jumpsEl.addEventListener('click', e => { const b = e.target.closest('[data-jump]'); if (b) jump(b.dataset.jump); });
+  document.getElementById('reset').addEventListener('click', () => { Snd.stop(); probeOff(); stopOpt(); s = fresh(); render(); });
+
+  if (Snd.isFile) document.getElementById('file-note').hidden = false;
+  render();
+
+  // ---------- Board ----------
+  const SAVED = { hz: 4000, loud: 32 };
+  const BOARD = [
+    { n: '01', t: '첫 화면', en: 'Welcome and safety check', st: { screen: 'welcome' }, notes: [
+      'Shown once, on first launch. Two lines say what the app does; no tutorial pages.',
+      'Red-flag list from <code>docs/clinical/red-flags.md</code>. "네" goes to 02, "아니요" opens the finder.',
+      'The disclaimer sentence lives here; the full text is in 앱 정보.' ] },
+    { n: '02', t: '진료 안내', en: 'When a red flag applies', st: { screen: 'referral' }, notes: [
+      'Wording is never softened, per the red-flags rule.',
+      '"이미 진료를 받았어요" continues to the finder (audit decision D6 default).' ] },
+    { n: '03', t: '찾기 1/3 · 높이', en: 'Pitch', st: { screen: 'm1', hz: 4000, toneOn: true }, notes: [
+      'Touching the slider, the ± buttons or ▶ starts the tone, at a fixed quiet level.',
+      '250 Hz–16 kHz on a log scale. ± moves one semitone.',
+      '"뚜렷한 음이 아니에요" skips to loudness, matched with a hiss instead of a tone.' ] },
+    { n: '04', t: '찾기 2/3 · 확인', en: 'Octave check', st: { screen: 'm2', hz: 4000, octave: 0, playingOpt: 0 }, notes: [
+      'Octave confusion is the most common pitch-matching error.',
+      'Tapping a row plays it for 2 seconds and selects it. 찾은 음 starts selected.',
+      'Rows outside 250 Hz–16 kHz are hidden.' ] },
+    { n: '05', t: '찾기 3/3 · 크기', en: 'Loudness', st: { screen: 'm3', hz: 4000, loud: 32, toneOn: true }, notes: [
+      'Starts silent and rises with the slider, so nothing is loud by surprise. 완료 stays disabled until the slider leaves 0.',
+      '0–100 is relative to this phone, these earphones and this media volume. The result screen says so.' ] },
+    { n: '06', t: '결과', en: 'Result', st: { screen: 'result', hz: 4000, loud: 32 }, notes: [
+      'Both values in plain words.',
+      'Saving turns 이명 음 빼기 on and shows a short "저장했어요" message on the main screen.',
+      '"다시 하기" restarts at step 1.' ] },
+    { n: '07', t: '메인 · 처음', en: 'Main screen, nothing measured yet', st: { screen: 'main', saved: null, sound: 'pink' }, notes: [
+      'Every sound plays without measuring anything.',
+      'Only 이명 음 빼기 is disabled, and its row says why.',
+      '"찾기" opens the same three steps.' ] },
+    { n: '08', t: '메인 · 재생 중', en: 'Main screen, playing with the notch on', st: { screen: 'main', saved: SAVED, sound: 'rain', notch: true, playing: true, volume: 55 }, notes: [
+      'Top to bottom: my tinnitus → pick one sound → notch → volume and play.',
+      'Tapping another tile while playing switches with a short crossfade.',
+      'The slider is the phone\'s media volume, so the hardware keys move it too.',
+      'One line of listening guidance under the play button.' ] },
+    { n: '09', t: '앱 정보', en: 'Info sheet', st: { screen: 'main', saved: SAVED, sound: 'rain', notch: true, playing: true, volume: 55, sheet: 'info' }, notes: [
+      'The only secondary screen: disclaimer, red-flag list, privacy policy, contact and version.',
+      'Play requires the privacy policy link inside the app.' ] },
+    { n: '10', t: '알림', en: 'Notification while playing', st: { screen: 'notification' }, notes: [
+      'Required for playback with the screen off (foreground service).',
+      'Pause or resume, and close. The title names the sound and never says "치료".' ] },
+  ];
+
+  document.getElementById('board').innerHTML = BOARD.map(f => `
+    <figure class="frame">
+      <div class="phone"><div class="viewport" inert>${renderScreen(Object.assign(fresh(), f.st))}</div></div>
+      <figcaption>
+        <div class="cap-h"><span class="cap-n">${f.n}</span><span class="cap-t">${f.t}</span></div>
+        <div class="cap-en">${f.en}</div>
+        <ul>${f.notes.map(n => `<li>${n}</li>`).join('')}</ul>
+      </figcaption>
+    </figure>`).join('');
+
+  // Phones shrink to fit narrow windows
+  function fit() {
+    const w = document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--z', Math.min(1, (w - 32) / 376).toFixed(3));
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+</body>
+</html>

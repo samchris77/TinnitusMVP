@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Five rounded bars (a sound level), centred inside the adaptive-icon safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M27,49 a3,3 0 0,1 6,0 V59 a3,3 0 0,1 -6,0 Z M39,42 a3,3 0 0,1 6,0 V66 a3,3 0 0,1 -6,0 Z M51,35 a3,3 0 0,1 6,0 V73 a3,3 0 0,1 -6,0 Z M63,42 a3,3 0 0,1 6,0 V66 a3,3 0 0,1 -6,0 Z M75,49 a3,3 0 0,1 6,0 V59 a3,3 0 0,1 -6,0 Z" />
+</vector>

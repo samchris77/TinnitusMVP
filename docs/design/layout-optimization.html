@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinnitusMVP — Layout Audit & Optimization</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #ECE7DE;
+      --card: #FFFFFF;
+      --foreground: #1A2E2C;
+      --muted-foreground: #4A5C5A;
+      --border: #E5DED2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', Roboto, sans-serif;
+      word-break: keep-all;
+      -webkit-font-smoothing: antialiased;
+    }
+    .phone-frame {
+      width: 360px;
+      height: 760px;
+      border: 8px solid #1F2725;
+      border-radius: 42px;
+      background: #1F2725;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+      flex-shrink: 0;
+    }
+    .phone-screen {
+      position: absolute;
+      inset: 0;
+      border-radius: 34px;
+      overflow: hidden;
+      background: #F5F1EA;
+      color: #1A2E2C;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    .phone-screen.dark-mode {
+      background: #111B1A;
+      color: #EAE6DF;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.94); opacity: 0.55; }
+      100% { transform: scale(1.24); opacity: 0; }
+    }
+    .play-pulse::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 9999px;
+      border: 2px solid #D67C5C;
+      animation: pulse-ring 2.2s ease-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-6 md:p-10">
+
+  <div class="max-w-6xl mx-auto space-y-8">
+    <!-- Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">TinnitusMVP · UI/UX Layout Diagnosis</span>
+          <h1 class="text-2xl md:text-3xl font-bold mt-1">레이아웃 진단 및 최적화 비교 (Current vs. Optimized)</h1>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-700 border border-amber-500/30">현재 이슈 5건 발견</span>
+          <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-700 border border-emerald-500/30">원스크린(Zero-Scroll) 최적화</span>
+        </div>
+      </div>
+      <p class="text-sm text-[var(--muted-foreground)] leading-relaxed max-w-4xl">
+        현재 <code>TinnitusMVP</code>(v1.1)의 따뜻한 종이 질감(<code>#F5F1EA</code>)과 딥 틸(<code>#2D5F5D</code>)·코랄(<code>#D67C5C</code>) 컬러 시스템은 매우 훌륭합니다. 
+        하지만 <strong>① 메인 화면의 애매한 세로 오버플로우(~35dp 잘림)</strong>, <strong>② 체크인 주간에 '내 변화' 진입이 막히는 동선 병목</strong>, <strong>③ 슬라이더 '혼합점' 텍스트 잘림</strong>, <strong>④ 하단 플레이어의 우측 96dp 빈 공간 낭비</strong>를 개선하면 훨씬 완성도 높은 레이아웃이 됩니다.
+      </p>
+
+      <!-- Screen Selector Tabs -->
+      <div class="flex flex-wrap gap-2 pt-2 border-t border-[var(--border)]" id="screen-tabs">
+        <button data-tab="main" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#2D5F5D] text-white shadow-sm">
+          1. 메인 화면 (원스크린 &amp; 사운드 믹스)
+        </button>
+        <button data-tab="records" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)]">
+          2. 내 기록 화면 (상시 접근 &amp; 컴팩트 차트)
+        </button>
+        <button data-tab="finder" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)]">
+          3. 내 이명 찾기 (통합 컨트롤 카드)
+        </button>
+        <button data-tab="night" class="tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)]">
+          4. 수면/야간 다크 모드 (신규 제안)
+        </button>
+      </div>
+    </header>
+
+    <!-- Key Issues Summary Strip -->
+    <section id="diagnosis-panel" class="grid grid-cols-1 md:grid-cols-2 gap-4"></section>
+
+    <!-- Side-by-Side Phone Comparison -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start justify-items-center">
+      <!-- BEFORE COLUMN -->
+      <div class="flex flex-col items-center space-y-3 w-full max-w-[380px]">
+        <div class="w-full flex items-center justify-between px-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-rose-500/15 text-rose-700 border border-rose-500/30">CURRENT (v1.1)</span>
+            <span class="text-sm font-semibold">현재 레이아웃</span>
+          </div>
+          <span class="text-xs text-[var(--muted-foreground)]">360 × 760 dp</span>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen" id="phone-before"></div>
+        </div>
+      </div>
+
+      <!-- AFTER COLUMN -->
+      <div class="flex flex-col items-center space-y-3 w-full max-w-[380px]">
+        <div class="w-full flex items-center justify-between px-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/15 text-emerald-700 border border-emerald-500/30">OPTIMIZED</span>
+            <span class="text-sm font-semibold">최적화 레이아웃 (클릭해보세요)</span>
+          </div>
+          <span class="text-xs text-[var(--muted-foreground)]">인터랙티브 프리뷰</span>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-screen" id="phone-after"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const icons = {
+        info: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 16v-4m0-4h.01"/></svg>`,
+        calendar: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18"/></svg>`,
+        moon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`,
+        back: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7-7l-7 7 7 7"/></svg>`,
+        chevRight: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>`,
+        play: `<svg class="w-8 h-8 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`,
+        pause: `<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
+        volDown: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M7 9v6h4l5 5V4l-5 5H7z"/></svg>`,
+        volUp: `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>`,
+        timer: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path stroke-linecap="round" d="M12 9v4l2.5 2.5M9 2h6"/></svg>`,
+        tune: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="10" cy="18" r="2" fill="currentColor"/></svg>`,
+        rain: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 16.2A4.5 4.5 0 0017.5 8h-1.8A7 7 0 104 14.9M16 14v6m-4-4v6m-4-6v6"/></svg>`,
+        waves: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M2 12c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0M2 17c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0"/></svg>`,
+        brook: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>`,
+        fire: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22c4.97 0 9-3.58 9-8 0-4.5-4-7.5-6-11-1 3-3.5 4.5-3.5 4.5S9 5.5 8 4C5.5 7 3 10.5 3 14c0 4.42 4.03 8 9 8z"/></svg>`,
+        check: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`,
+        headphones: `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>`
+      };
+
+      const state = {
+        tab: 'main',
+        playing: true,
+        notchOn: true,
+        noise: 'pink',
+        nature: 'rain',
+        vol: 6,
+        mix: 7
+      };
+
+      const statusBar = (dark = false) => `
+        <div class="h-7 px-6 flex items-center justify-between text-xs font-semibold flex-shrink-0 ${dark ? 'text-[#EAE6DF]' : 'text-[#1A2E2C]'}">
+          <span>9:41</span>
+          <span class="flex items-center gap-1.5 opacity-80">LTE · 100%</span>
+        </div>
+      `;
+
+      const gestureBar = (dark = false) => `
+        <div class="h-4 flex items-center justify-center flex-shrink-0">
+          <div class="w-24 h-1 rounded-full ${dark ? 'bg-white/30' : 'bg-[#1A2E2C]/30'}"></div>
+        </div>
+      `;
+
+      function renderMainBefore() {
+        return `
+          ${statusBar()}
+          <div class="h-12 px-4 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-xl font-bold tracking-tight">이명 사운드</h2>
+            <span class="text-[#4A5C5A] p-2">${icons.info}</span>
+          </div>
+          <div class="flex-1 overflow-y-auto px-4 pt-1 pb-3 space-y-4 no-scrollbar relative">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div class="px-4 py-3 flex items-center justify-between min-h-[68px]">
+                <div>
+                  <div class="text-xs text-[#4A5C5A]">내 이명</div>
+                  <div class="text-base font-semibold">4,240 Hz · 크기 28</div>
+                </div>
+                <span class="text-xs font-semibold text-[#2D5F5D] px-2 py-1">다시 찾기</span>
+              </div>
+              <div class="border-t border-[#E5DED2] px-4 py-2.5 flex items-center gap-2.5 min-h-[60px] bg-rose-50/70">
+                <span class="w-2 h-2 rounded-full bg-[#2D5F5D]"></span>
+                <div class="flex-1">
+                  <div class="text-xs font-semibold flex items-center gap-1.5">
+                    이번 주 체크인
+                    <span class="px-1.5 py-0.5 text-[12px] rounded bg-rose-600 text-white font-bold">문제 ①</span>
+                  </div>
+                  <div class="text-xs text-[#4A5C5A]">체크인 전까지 '내 변화' 열람 불가!</div>
+                </div>
+                <span class="text-[#8B9694]">${icons.chevRight}</span>
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <div class="text-xs text-[#4A5C5A] pl-1">노이즈 (단독 선택만 가능)</div>
+              <div class="grid grid-cols-3 gap-2">
+                <div class="h-[72px] rounded-xl bg-white flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-white border border-black/15"></span>화이트
+                </div>
+                <div class="h-[72px] rounded-xl bg-white flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-[#EBB7B1] border border-black/15"></span>핑크
+                </div>
+                <div class="h-[72px] rounded-xl bg-white flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  <span class="w-5 h-5 rounded-full bg-[#8C664D] border border-black/15"></span>브라운
+                </div>
+              </div>
+              <div class="text-xs text-[#4A5C5A] pl-1 pt-1 flex items-center justify-between">
+                <span>자연음 (좁은 4열 배치)</span>
+                <span class="px-1.5 py-0.5 text-[12px] rounded bg-amber-600 text-white font-bold">문제 ② 좁은 타일</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5">
+                <div class="h-[72px] rounded-xl bg-[#E8F0EE] border-2 border-[#2D5F5D] text-[#2D5F5D] flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  ${icons.rain}빗소리
+                </div>
+                <div class="h-[72px] rounded-xl bg-white text-[#4A5C5A] flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  ${icons.waves}파도
+                </div>
+                <div class="h-[72px] rounded-xl bg-white text-[#4A5C5A] flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  ${icons.brook}시냇물
+                </div>
+                <div class="h-[72px] rounded-xl bg-white text-[#4A5C5A] flex flex-col items-center justify-center gap-1 text-xs font-semibold">
+                  ${icons.fire}모닥불
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-3.5 shadow-sm flex items-center justify-between border-2 border-dashed border-rose-400">
+              <div>
+                <div class="text-sm font-semibold flex items-center gap-1.5">
+                  이명 음 빼기
+                  <span class="px-1.5 py-0.5 text-[12px] rounded bg-rose-600 text-white font-bold">문제 ③ 하단 잘림</span>
+                </div>
+                <div class="text-xs text-[#4A5C5A]">4,240 Hz 주변을 비우고 들려줘요</div>
+              </div>
+              <div class="w-12 h-7 rounded-full bg-[#2D5F5D] relative">
+                <span class="w-5 h-5 rounded-full bg-white absolute right-1 top-1"></span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(26,46,44,0.08)] px-4 pt-3 pb-2 flex flex-col items-center gap-2.5 flex-shrink-0">
+            <div class="w-full flex items-center gap-2 relative">
+              <span class="text-[#8B9694]">${icons.volDown}</span>
+              <div class="flex-1 h-6 flex items-center relative">
+                <div class="w-full h-1.5 bg-[#E2DCD1] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#2D5F5D]" style="width: 40%"></div>
+                </div>
+                <div class="w-5 h-5 rounded-full bg-white border-2 border-[#2D5F5D] shadow absolute" style="left: calc(40% - 10px)"></div>
+                <div class="absolute top-1.5 flex flex-col items-center" style="left: 47%">
+                  <div class="w-0.5 h-3 bg-[#4A5C5A]"></div>
+                  <span class="text-[12px] text-rose-600 font-bold whitespace-nowrap bg-rose-100 px-1 rounded">혼합점(겹침 ④)</span>
+                </div>
+              </div>
+              <span class="text-[#8B9694]">${icons.volUp}</span>
+            </div>
+            <div class="w-full flex items-center justify-between pt-1">
+              <button class="w-24 h-11 rounded-full border border-[#E5DED2] flex items-center justify-center gap-1 text-xs font-semibold text-[#4A5C5A]">
+                ${icons.timer}<span>타이머</span>
+              </button>
+              <div class="w-16 h-16 rounded-full bg-[#D67C5C] text-white flex items-center justify-center shadow-md relative">
+                ${icons.play}
+              </div>
+              <div class="w-24 h-11 rounded-xl border-2 border-dashed border-amber-400 flex items-center justify-center text-[12px] font-semibold text-amber-700 bg-amber-50">
+                빈 여백 96dp ⑤
+              </div>
+            </div>
+            <div class="flex items-center gap-1 text-xs text-[#4A5C5A] py-1">
+              <span class="text-[#2D5F5D]">${icons.check}</span>
+              <span>권장 볼륨이에요 (별도 1줄 차지)</span>
+              <span>${icons.chevRight}</span>
+            </div>
+            ${gestureBar()}
+          </div>
+        `;
+      }
+
+      function renderMainAfter() {
+        return `
+          ${statusBar()}
+          <div class="h-12 px-4 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-xl font-bold tracking-tight">이명 사운드</h2>
+            <div class="flex items-center gap-1">
+              <button data-action="goto-records" class="p-2 rounded-full text-[#2D5F5D] bg-[#E8F0EE] hover:opacity-90 flex items-center gap-1 px-2.5 py-1 text-xs font-semibold">
+                ${icons.calendar}<span>내 기록</span>
+              </button>
+              <span class="text-[#4A5C5A] p-2">${icons.info}</span>
+            </div>
+          </div>
+          <div class="flex-1 px-4 pt-1 pb-2 flex flex-col justify-between overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div class="px-3.5 py-2.5 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-[#4A5C5A]">내 이명</span>
+                    <span class="text-xs font-semibold text-[#2D5F5D] underline cursor-pointer">측정 변경</span>
+                  </div>
+                  <div class="text-sm font-bold truncate">4,240 Hz · 크기 28</div>
+                </div>
+                <button data-action="toggle-notch" class="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${state.notchOn ? 'bg-[#E8F0EE] text-[#2D5F5D] border border-[#2D5F5D]' : 'bg-[#F5F1EA] text-[#4A5C5A] border border-transparent'}">
+                  <span class="w-2 h-2 rounded-full ${state.notchOn ? 'bg-[#2D5F5D]' : 'bg-[#8B9694]'}"></span>
+                  <span>이명 음 빼기 ${state.notchOn ? 'ON' : 'OFF'}</span>
+                </button>
+              </div>
+              <div class="border-t border-[#E5DED2] px-3.5 py-2 flex items-center justify-between bg-[#F5F1EA]/40">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-[#2D5F5D]"></span>
+                  <span class="text-xs font-semibold">이번 주 체크인 예정</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button data-action="goto-records" class="text-xs font-semibold text-[#4A5C5A] hover:text-[#1A2E2C] px-2 py-1 rounded-lg">지난 점수 48점</button>
+                  <button class="px-2.5 py-1 rounded-lg bg-[#2D5F5D] text-white text-xs font-semibold">체크인 · 2분</button>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between px-1">
+                <span class="text-xs font-semibold text-[#4A5C5A]">배경 노이즈</span>
+                <span class="text-xs text-[#2D5F5D] font-medium">자연음과 함께 섞어 들을 수 있어요</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5">
+                ${[
+                  { id: 'off', label: '끄기', swatch: null },
+                  { id: 'white', label: '화이트', swatch: '#FFFFFF' },
+                  { id: 'pink', label: '핑크', swatch: '#EBB7B1' },
+                  { id: 'brown', label: '브라운', swatch: '#8C664D' }
+                ].map(n => {
+                  const sel = state.noise === n.id;
+                  return `<button data-noise="${n.id}" class="h-11 rounded-xl flex items-center justify-center gap-1.5 text-xs font-semibold transition-all ${sel ? 'bg-[#E8F0EE] text-[#2D5F5D] border-2 border-[#2D5F5D]' : 'bg-white text-[#1A2E2C] shadow-sm'}">
+                    ${n.swatch ? `<span class="w-3.5 h-3.5 rounded-full border border-black/15" style="background:${n.swatch}"></span>` : ''}
+                    <span>${n.label}</span>
+                  </button>`;
+                }).join('')}
+              </div>
+              <div class="text-xs font-semibold text-[#4A5C5A] px-1 pt-0.5">자연음 (2×2 여유 있는 터치 영역)</div>
+              <div class="grid grid-cols-2 gap-2">
+                ${[
+                  { id: 'rain', label: '빗소리', desc: '차분한 빗방울', icon: icons.rain },
+                  { id: 'waves', label: '파도', desc: '규칙적인 해변', icon: icons.waves },
+                  { id: 'brook', label: '시냇물', desc: '맑은 물흐름', icon: icons.brook },
+                  { id: 'fire', label: '모닥불', desc: '따스한 장작불', icon: icons.fire }
+                ].map(item => {
+                  const sel = state.nature === item.id;
+                  return `<button data-nature="${item.id}" class="h-14 px-3 rounded-xl flex items-center gap-2.5 text-left transition-all ${sel ? 'bg-[#E8F0EE] text-[#2D5F5D] border-2 border-[#2D5F5D]' : 'bg-white text-[#1A2E2C] shadow-sm'}">
+                    <span class="${sel ? 'text-[#2D5F5D]' : 'text-[#4A5C5A]'}">${item.icon}</span>
+                    <span class="min-w-0">
+                      <span class="block text-xs font-bold">${item.label}</span>
+                      <span class="block text-[12px] text-[#4A5C5A] truncate">${item.desc}</span>
+                    </span>
+                  </button>`;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(26,46,44,0.08)] px-4 pt-3 pb-1.5 flex flex-col gap-2 flex-shrink-0">
+            <div class="flex items-center justify-between text-xs px-1">
+              <span class="font-semibold text-[#1A2E2C]">볼륨 ${state.vol} / 15</span>
+              <span class="text-[#2D5F5D] font-semibold flex items-center gap-1">
+                ${icons.check}<span>권장 볼륨 (혼합점 ${state.mix})</span>
+              </span>
+            </div>
+            <div class="w-full flex items-center gap-2">
+              <span class="text-[#8B9694]">${icons.volDown}</span>
+              <div class="flex-1 h-5 flex items-center relative">
+                <div class="w-full h-1.5 bg-[#E2DCD1] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#2D5F5D]" style="width: ${(state.vol / 15) * 100}%"></div>
+                </div>
+                <div class="w-0.5 h-3.5 bg-[#1A2E2C] rounded-full absolute" style="left: ${(state.mix / 15) * 100}%" title="혼합점"></div>
+                <div class="w-5 h-5 rounded-full bg-white border-2 border-[#2D5F5D] shadow absolute" style="left: calc(${(state.vol / 15) * 100}% - 10px)"></div>
+              </div>
+              <span class="text-[#8B9694]">${icons.volUp}</span>
+            </div>
+            <div class="w-full flex items-center justify-between pt-0.5">
+              <button class="w-24 h-11 rounded-full border border-[#E5DED2] flex items-center justify-center gap-1.5 text-xs font-semibold text-[#4A5C5A]">
+                ${icons.timer}<span>30분</span>
+              </button>
+              <button data-action="toggle-play" class="w-16 h-16 rounded-full bg-[#D67C5C] text-white flex items-center justify-center shadow-md relative ${state.playing ? 'play-pulse' : ''}">
+                ${state.playing ? icons.pause : icons.play}
+              </button>
+              <button class="w-24 h-11 rounded-full bg-[#E8F0EE] text-[#2D5F5D] flex items-center justify-center gap-1 text-xs font-semibold">
+                ${icons.tune}<span>내 볼륨</span>
+              </button>
+            </div>
+            ${gestureBar()}
+          </div>
+        `;
+      }
+
+      function renderRecordsBefore() {
+        return `
+          ${statusBar()}
+          <div class="h-12 px-2 flex items-center gap-1 flex-shrink-0">
+            <span class="p-2 text-[#4A5C5A]">${icons.back}</span>
+            <h2 class="text-base font-semibold">내 변화</h2>
+          </div>
+          <div class="flex-1 overflow-y-auto px-4 py-2 space-y-3.5 no-scrollbar">
+            <div class="bg-white rounded-2xl p-4 shadow-sm space-y-1">
+              <div class="text-xs text-[#4A5C5A]">이번 주 이명 점수</div>
+              <div class="text-3xl font-bold">48 <span class="text-sm font-semibold text-[#4A5C5A]">점</span></div>
+              <div class="text-xs font-semibold text-[#4A5C5A]">↓ 첫 기록보다 18점 낮아요</div>
+              <div class="text-xs text-[#4A5C5A]">0–100점 · 낮을수록 이명이 덜 느껴졌다는 뜻이에요</div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2 border-2 border-dashed border-amber-400">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-semibold">이명 점수</div>
+                  <div class="text-xs text-[#4A5C5A]">주 1회 · 질문 3개 (K-TMI)</div>
+                </div>
+                <span class="px-1.5 py-0.5 text-[12px] rounded bg-amber-600 text-white font-bold">청취 시간 기록 없음</span>
+              </div>
+              <svg viewBox="0 0 280 120" class="w-full h-28 overflow-visible">
+                <line x1="28" x2="255" y1="15" y2="15" stroke="#E5DED2" stroke-width="1"/>
+                <line x1="28" x2="255" y1="55" y2="55" stroke="#E5DED2" stroke-width="1"/>
+                <line x1="28" x2="255" y1="95" y2="95" stroke="#E5DED2" stroke-width="1"/>
+                <text x="22" y="19" text-anchor="end" font-size="11" fill="#4A5C5A">100</text>
+                <text x="22" y="59" text-anchor="end" font-size="11" fill="#4A5C5A">50</text>
+                <text x="22" y="99" text-anchor="end" font-size="11" fill="#4A5C5A">0</text>
+                <polyline fill="none" stroke="#2D5F5D" stroke-width="2" points="40,42 115,49 190,53 245,57"/>
+                <circle cx="40" cy="42" r="4" fill="#2D5F5D"/>
+                <circle cx="115" cy="49" r="4" fill="#2D5F5D"/>
+                <circle cx="190" cy="53" r="4" fill="#2D5F5D"/>
+                <circle cx="245" cy="57" r="4" fill="#2D5F5D"/>
+                <text x="255" y="61" font-size="12" font-weight="bold" fill="#C44536">48 (우측 여백 협소)</text>
+              </svg>
+            </div>
+            <div class="bg-white rounded-2xl px-4 py-3.5 shadow-sm flex items-center gap-2 text-sm">
+              <span class="text-[#2D5F5D]">${icons.calendar}</span>
+              <span>다음 체크인 · 10월 28일 수요일</span>
+            </div>
+            <div class="text-xs font-semibold text-[#4A5C5A] pl-1">기록 (스크롤 아래로 밀림)</div>
+            <div class="bg-white rounded-2xl shadow-sm divide-y divide-[#E5DED2]">
+              <div class="px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold">10월 21일</div>
+                  <div class="text-xs text-[#4A5C5A]">크기 5 · 인지 70% · 심각도 42</div>
+                </div>
+                <span class="text-sm font-bold">48점</span>
+              </div>
+              <div class="px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold">10월 14일</div>
+                  <div class="text-xs text-[#4A5C5A]">크기 6 · 인지 70% · 심각도 48</div>
+                </div>
+                <span class="text-sm font-bold">56점</span>
+              </div>
+            </div>
+          </div>
+          ${gestureBar()}
+        `;
+      }
+
+      function renderRecordsAfter() {
+        const days = [
+          0,0,0,0,1,2,0,
+          2,2,0,2,3,2,1,
+          0,2,1,2,3,2,0,
+          1,2,2,0,0,0,0
+        ];
+        return `
+          ${statusBar()}
+          <div class="h-12 px-2 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-1">
+              <button data-action="goto-main" class="p-2 text-[#4A5C5A]">${icons.back}</button>
+              <h2 class="text-base font-bold">내 기록</h2>
+            </div>
+            <span class="mr-3 px-2.5 py-1 rounded-full bg-[#E8F0EE] text-[#2D5F5D] text-xs font-semibold">진료 요약 공유</span>
+          </div>
+          <div class="flex-1 overflow-y-auto px-4 py-1.5 space-y-3 no-scrollbar">
+            <div class="bg-white rounded-2xl p-3.5 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-bold">2026년 10월 청취 달력</div>
+                  <div class="text-xs text-[#4A5C5A]">이번 달 16일 들었어요 · 총 18시간 40분</div>
+                </div>
+                <div class="flex items-center gap-1 text-xs font-semibold text-[#2D5F5D]">
+                  <span>‹</span><span class="px-1">10월</span><span class="opacity-30">›</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-7 gap-1 text-center text-[12px] text-[#4A5C5A]">
+                <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+                ${days.map((lv, idx) => {
+                  const d = idx + 1;
+                  const isToday = d === 22;
+                  const hasCheckin = d === 7 || d === 14 || d === 21;
+                  const bg = lv === 0 ? 'bg-[#F5F1EA]/70 text-[#4A5C5A]'
+                    : lv === 1 ? 'bg-[#2D5F5D]/15 text-[#1A2E2C]'
+                    : lv === 2 ? 'bg-[#2D5F5D]/45 text-[#1A2E2C]'
+                    : 'bg-[#2D5F5D] text-white';
+                  return `<div class="h-8 rounded-lg flex flex-col items-center justify-center relative text-xs font-semibold ${bg} ${isToday ? 'ring-2 ring-[#1A2E2C]' : ''}">
+                    <span>${d}</span>
+                    ${hasCheckin ? `<span class="w-1 h-1 rounded-full ${lv === 3 ? 'bg-white' : 'bg-[#D67C5C]'} absolute bottom-1"></span>` : ''}
+                  </div>`;
+                }).join('')}
+              </div>
+              <div class="flex items-center justify-between text-[12px] text-[#4A5C5A] pt-1 border-t border-[#E5DED2]">
+                <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-[#2D5F5D]/15 inline-block"></i>30분 미만</span>
+                <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-[#2D5F5D]/45 inline-block"></i>30분–2시간</span>
+                <span class="flex items-center gap-1"><i class="w-2.5 h-2.5 rounded-sm bg-[#2D5F5D] inline-block"></i>2시간+</span>
+                <span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-[#D67C5C] inline-block"></i>체크인</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-xs text-[#4A5C5A]">이번 주 이명 점수 (K-TMI)</div>
+                  <div class="flex items-baseline gap-1.5 mt-0.5">
+                    <span class="text-2xl font-bold">48점</span>
+                    <span class="text-xs font-semibold text-[#2D5F5D]">↓ 첫 기록보다 18점 감소</span>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg bg-[#F5F1EA] text-xs font-semibold text-[#4A5C5A]">다음: 10/28(수)</span>
+              </div>
+              <svg viewBox="0 0 280 96" class="w-full h-24">
+                <line x1="26" x2="268" y1="12" y2="12" stroke="#E5DED2" stroke-width="1"/>
+                <line x1="26" x2="268" y1="44" y2="44" stroke="#E5DED2" stroke-width="1"/>
+                <line x1="26" x2="268" y1="76" y2="76" stroke="#E5DED2" stroke-width="1"/>
+                <text x="20" y="16" text-anchor="end" font-size="11" fill="#4A5C5A">100</text>
+                <text x="20" y="48" text-anchor="end" font-size="11" fill="#4A5C5A">50</text>
+                <text x="20" y="80" text-anchor="end" font-size="11" fill="#4A5C5A">0</text>
+                <path d="M40,34 L108,40 L176,44 L244,47 L244,76 L40,76 Z" fill="#2D5F5D" fill-opacity="0.1"/>
+                <polyline fill="none" stroke="#2D5F5D" stroke-width="2.2" points="40,34 108,40 176,44 244,47"/>
+                <circle cx="40" cy="34" r="3.5" fill="#2D5F5D"/>
+                <circle cx="108" cy="40" r="3.5" fill="#2D5F5D"/>
+                <circle cx="176" cy="44" r="3.5" fill="#2D5F5D"/>
+                <circle cx="244" cy="47" r="4" fill="#2D5F5D"/>
+                <text x="40" y="92" text-anchor="middle" font-size="11" fill="#4A5C5A">9/30</text>
+                <text x="108" y="92" text-anchor="middle" font-size="11" fill="#4A5C5A">10/7</text>
+                <text x="176" y="92" text-anchor="middle" font-size="11" fill="#4A5C5A">10/14</text>
+                <text x="244" y="92" text-anchor="middle" font-size="11" font-weight="600" fill="#1A2E2C">10/21</text>
+              </svg>
+            </div>
+          </div>
+          ${gestureBar()}
+        `;
+      }
+
+      function renderFinderBefore() {
+        return `
+          ${statusBar()}
+          <div class="h-12 px-2 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-1">
+              <span class="p-2 text-[#4A5C5A]">${icons.back}</span>
+              <h2 class="text-base font-semibold">내 이명 찾기</h2>
+            </div>
+            <span class="text-xs text-[#4A5C5A] pr-3">1 / 3</span>
+          </div>
+          <div class="flex-1 px-4 py-2 space-y-4">
+            <div>
+              <h1 class="text-xl font-bold">이명과 같은 높이를 찾아요</h1>
+              <p class="text-sm text-[#4A5C5A] mt-1">막대를 움직여 이명과 가장 비슷한 높이에 맞추세요.</p>
+            </div>
+            <div class="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-white text-xs text-[#4A5C5A]">
+              <span class="text-[#2D5F5D]">${icons.headphones}</span>
+              <span>이어폰을 끼고 조용한 곳에서</span>
+            </div>
+            <div class="bg-[#E8F0EE] rounded-2xl py-6 px-4 flex flex-col items-center">
+              <div class="text-3xl font-bold text-[#2D5F5D]">4,240 Hz</div>
+              <div class="text-xs text-[#4A5C5A] mt-1">높은 음</div>
+              <div class="w-16 h-16 rounded-full bg-[#D67C5C] text-white flex items-center justify-center shadow-md mt-4">
+                ${icons.pause}
+              </div>
+            </div>
+            <div class="space-y-1 border-2 border-dashed border-amber-400 rounded-xl p-2">
+              <div class="w-full h-1.5 bg-[#E2DCD1] rounded-full overflow-hidden">
+                <div class="h-full bg-[#2D5F5D]" style="width: 68%"></div>
+              </div>
+              <div class="flex justify-between text-xs text-[#4A5C5A] pt-1">
+                <span>낮은 음 (대역 가늠 어려움)</span>
+                <span>높은 음</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button class="h-12 rounded-xl bg-white border border-[#E5DED2] text-xs font-semibold">− 조금 낮게</button>
+              <button class="h-12 rounded-xl bg-white border border-[#E5DED2] text-xs font-semibold">+ 조금 높게</button>
+            </div>
+          </div>
+          <div class="px-4 pb-2 space-y-2">
+            <button class="w-full h-11 text-sm font-semibold text-[#2D5F5D]">뚜렷한 음이 아니에요</button>
+            <button class="w-full h-12 rounded-xl bg-[#2D5F5D] text-white text-sm font-semibold">다음</button>
+            ${gestureBar()}
+          </div>
+        `;
+      }
+
+      function renderFinderAfter() {
+        return `
+          ${statusBar()}
+          <div class="h-12 px-2 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-1">
+              <span class="p-2 text-[#4A5C5A]">${icons.back}</span>
+              <h2 class="text-base font-bold">내 이명 찾기</h2>
+            </div>
+            <div class="flex items-center gap-1.5 pr-3">
+              <span class="w-6 h-1.5 rounded-full bg-[#2D5F5D]"></span>
+              <span class="w-6 h-1.5 rounded-full bg-[#E2DCD1]"></span>
+              <span class="w-6 h-1.5 rounded-full bg-[#E2DCD1]"></span>
+            </div>
+          </div>
+          <div class="flex-1 px-4 py-2 space-y-3.5">
+            <div>
+              <h1 class="text-xl font-bold">이명과 같은 높이를 찾아요</h1>
+              <p class="text-sm text-[#4A5C5A] mt-0.5">슬라이더로 대략 맞춘 뒤, 아래 버튼으로 반음씩 미세 조절하세요.</p>
+            </div>
+            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-white shadow-sm text-xs">
+              <span class="flex items-center gap-1.5 text-[#4A5C5A]">
+                <span class="text-[#2D5F5D]">${icons.headphones}</span>이어폰 착용 권장
+              </span>
+              <span class="font-semibold text-[#2D5F5D]">현재 기기 볼륨 6/15 고정됨</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm space-y-4">
+              <div class="bg-[#E8F0EE] rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <span class="px-2 py-0.5 rounded-full bg-[#2D5F5D]/15 text-[#2D5F5D] text-xs font-bold">높은 음 대역 (4–8 kHz)</span>
+                  <div class="text-3xl font-bold text-[#2D5F5D] mt-1">4,240 Hz</div>
+                  <div class="text-xs text-[#4A5C5A]">삐— 하는 고주파 순음</div>
+                </div>
+                <button class="w-14 h-14 rounded-full bg-[#D67C5C] text-white flex items-center justify-center shadow-md play-pulse relative">
+                  ${icons.pause}
+                </button>
+              </div>
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-[12px] text-[#4A5C5A] font-medium px-0.5">
+                  <span>250Hz</span>
+                  <span>1kHz</span>
+                  <span class="text-[#2D5F5D] font-bold">4kHz</span>
+                  <span>8kHz</span>
+                  <span>16kHz</span>
+                </div>
+                <div class="w-full h-2 bg-[#E2DCD1] rounded-full relative">
+                  <div class="h-full bg-[#2D5F5D] rounded-full" style="width: 68%"></div>
+                  <div class="w-5 h-5 rounded-full bg-white border-2 border-[#2D5F5D] shadow absolute -top-1.5" style="left: calc(68% - 10px)"></div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <button class="h-11 rounded-xl bg-[#F5F1EA] text-xs font-semibold text-[#1A2E2C] hover:bg-[#E5DED2]">− 반음 낮게 (4,000 Hz)</button>
+                <button class="h-11 rounded-xl bg-[#F5F1EA] text-xs font-semibold text-[#1A2E2C] hover:bg-[#E5DED2]">+ 반음 높게 (4,490 Hz)</button>
+              </div>
+            </div>
+          </div>
+          <div class="px-4 pb-2 space-y-2">
+            <button class="w-full h-10 text-xs font-semibold text-[#2D5F5D] bg-[#E8F0EE]/60 rounded-xl">기계음/매미소리처럼 뚜렷한 음이 아니에요 →</button>
+            <button class="w-full h-12 rounded-xl bg-[#2D5F5D] text-white text-sm font-semibold">옥타브 확인으로 넘어갈게요</button>
+            ${gestureBar()}
+          </div>
+        `;
+      }
+
+      function renderNightBefore() {
+        return `
+          ${statusBar(false)}
+          <div class="h-12 px-4 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-xl font-bold tracking-tight">이명 사운드</h2>
+            <span class="px-2 py-0.5 rounded bg-rose-600 text-white text-xs font-bold">취침 시 눈부심</span>
+          </div>
+          <div class="flex-1 px-4 py-2 space-y-4">
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+              <div class="text-xs text-[#4A5C5A]">현재 라이트 모드 고정 (#F5F1EA / #FFFFFF)</div>
+              <div class="text-sm font-semibold mt-1">수면 타이머를 맞추려 밤에 앱을 열면 밝은 흰색 카드가 시야를 자극하고, 볼륨 1/15과 2/15 사이 미세 조절이 불가능합니다.</div>
+            </div>
+            <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2">
+              <div class="text-xs font-semibold">수면 타이머 시트 (밝은 배경)</div>
+              <div class="divide-y divide-[#E5DED2] text-sm">
+                <div class="py-2.5 flex justify-between"><span>15분</span><span class="w-4 h-4 rounded-full border border-[#8B9694]"></span></div>
+                <div class="py-2.5 flex justify-between font-semibold text-[#2D5F5D]"><span>30분</span><span class="w-4 h-4 rounded-full border-4 border-[#2D5F5D]"></span></div>
+                <div class="py-2.5 flex justify-between"><span>1시간</span><span class="w-4 h-4 rounded-full border border-[#8B9694]"></span></div>
+              </div>
+            </div>
+          </div>
+          ${gestureBar(false)}
+        `;
+      }
+
+      function renderNightAfter() {
+        return `
+          ${statusBar(true)}
+          <div class="h-12 px-4 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-xl font-bold tracking-tight text-[#EAE6DF]">이명 사운드</h2>
+            <div class="flex items-center gap-1.5">
+              <span class="px-2.5 py-1 rounded-full bg-[#1D2E2C] text-[#7BC4BE] text-xs font-semibold flex items-center gap-1">
+                ${icons.moon}<span>야간 모드</span>
+              </span>
+            </div>
+          </div>
+          <div class="flex-1 px-4 pt-1 pb-2 flex flex-col justify-between">
+            <div class="bg-[#1A2826] border border-[#2A3D3A] rounded-2xl p-3.5 flex items-center justify-between">
+              <div>
+                <div class="text-xs text-[#9BB0AD]">내 이명 · 4,240 Hz</div>
+                <div class="text-sm font-bold text-[#EAE6DF] mt-0.5">핑크 노이즈 + 빗소리 믹스 중</div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-[#243B39] text-[#7BC4BE] text-xs font-semibold">음 빼기 ON</span>
+            </div>
+            <div class="bg-[#1A2826] border border-[#2A3D3A] rounded-2xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs font-bold text-[#7BC4BE]">침실 미세 볼륨 (소프트웨어 감쇠)</span>
+                  <div class="text-xs text-[#9BB0AD]">휴대폰 볼륨 1칸 사이를 10단계로 세밀하게 줄여요</div>
+                </div>
+                <span class="text-sm font-bold text-[#EAE6DF]">65%</span>
+              </div>
+              <div class="w-full h-2 bg-[#111B1A] rounded-full overflow-hidden">
+                <div class="h-full bg-[#4A9B96]" style="width: 65%"></div>
+              </div>
+              <div class="flex justify-between text-[12px] text-[#9BB0AD]">
+                <span>아주 작게 (-12 dB)</span>
+                <span>기본 (0 dB)</span>
+              </div>
+            </div>
+            <div class="bg-[#1A2826] border border-[#2A3D3A] rounded-2xl p-3.5 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-[#9BB0AD] font-semibold">수면 타이머 · 28분 남음</span>
+                <span class="text-[#7BC4BE]">마지막 30초 천천히 페이드아웃</span>
+              </div>
+              <div class="grid grid-cols-5 gap-1.5 text-xs font-semibold">
+                <button class="h-9 rounded-lg bg-[#111B1A] text-[#9BB0AD]">끄기</button>
+                <button class="h-9 rounded-lg bg-[#111B1A] text-[#9BB0AD]">15분</button>
+                <button class="h-9 rounded-lg bg-[#243B39] text-[#7BC4BE] border border-[#4A9B96]">30분</button>
+                <button class="h-9 rounded-lg bg-[#111B1A] text-[#9BB0AD]">1시간</button>
+                <button class="h-9 rounded-lg bg-[#111B1A] text-[#9BB0AD]">2시간</button>
+              </div>
+            </div>
+          </div>
+          <div class="bg-[#1A2826] border-t border-[#2A3D3A] rounded-t-2xl px-4 pt-3 pb-1.5 flex flex-col items-center gap-2">
+            <div class="w-full flex items-center justify-between">
+              <span class="text-xs text-[#9BB0AD]">기기 볼륨 2 / 15 (혼합점 아래)</span>
+              <span class="text-xs text-[#7BC4BE] font-semibold">✓ 수면 권장 볼륨</span>
+            </div>
+            <div class="py-1">
+              <div class="w-16 h-16 rounded-full bg-[#D67C5C] text-white flex items-center justify-center shadow-lg play-pulse relative">
+                ${icons.pause}
+              </div>
+            </div>
+            ${gestureBar(true)}
+          </div>
+        `;
+      }
+
+      const DIAGNOSIS_COPY = {
+        main: [
+          {
+            badge: '현재 레이아웃 문제점 (v1.1)',
+            tone: 'rose',
+            items: [
+              '체크인 주간(due)일 때 내 이명 카드의 2번째 줄이 체크인 전용으로 바뀌어 [내 변화] 화면 진입이 불가능합니다.',
+              '노이즈(3열) + 자연음(4열) + 이명 음 빼기 스위치 카드가 세로로 나열되어 표준 360×760dp 화면에서 하단이 35dp 가량 잘립니다.',
+              '슬라이더의 "혼합점" 텍스트가 6dp 높이 Canvas 바깥(+9dp)에 그려져 아래 재생 버튼 행과 시각적으로 충돌합니다.'
+            ]
+          },
+          {
+            badge: '최적화 레이아웃 해법',
+            tone: 'emerald',
+            items: [
+              'AppBar 우측에 [내 기록] 버튼을 상시 배치하고, 카드 하단에서도 지난 점수와 체크인 버튼을 동시에 제공합니다.',
+              '[이명 음 빼기] 스위치를 내 이명 카드 우측에 통합하고 자연음을 2×2 카드로 정리해 스크롤 없는 원스크린(Zero-Scroll)을 달성합니다.',
+              '플레이어 우측의 빈 96dp Spacer 자리에 [내 볼륨] 버튼을 대칭 배치해 플레이어 높이를 44dp 줄이고 혼합점 라벨 겹침을 해결합니다.'
+            ]
+          }
+        ],
+        records: [
+          {
+            badge: '현재 내 변화(ProgressScreen) 문제점',
+            tone: 'rose',
+            items: [
+              '점수 카드 + 차트 카드 + 다음 체크인 카드 + 기록 리스트가 각각 별도 카드로 나뉘어 세로 스크롤이 불필요하게 깁니다.',
+              '내가 소리를 얼마나 들었는지(청취 시간/일수)가 전혀 표시되지 않아 소리 치료와 점수 변화를 연결해 보기 어렵습니다.',
+              'ScoreChart 우측 끝 점수 텍스트(points.last().x + 10.dp)가 100점일 때나 큰 글씨 설정에서 캔버스 밖으로 잘릴 수 있습니다.'
+            ]
+          },
+          {
+            badge: '최적화 내 기록(RecordsScreen) 해법',
+            tone: 'emerald',
+            items: [
+              '상단에 무압박 월간 청취 달력(30분 미만 / 30분~2시간 / 2시간+)과 체크인 점(dot)을 배치해 청취 습관과 점수를 한눈에 보여줍니다.',
+              '점수 요약 + 다음 체크인 일자 + K-TMI 추이 그래프를 하나의 통합 카드로 묶어 한 화면 안에 달력과 그래프가 모두 들어옵니다.',
+              '이비인후과 진료 시 보여줄 수 있는 [진료 요약 공유] 버튼을 상단에 제공합니다.'
+            ]
+          }
+        ],
+        finder: [
+          {
+            badge: '현재 내 이명 찾기(PitchScreen) 문제점',
+            tone: 'rose',
+            items: [
+              'Readout(주파수 표시)과 슬라이더, 미세 조절 버튼이 배경 위에 각각 흩어져 있어 조작 영역의 응집도가 떨어집니다.',
+              '로그 스케일 슬라이더에 주파수 눈금(250Hz ~ 16kHz)이 없어 현재 어느 대역을 탐색 중인지 직관적으로 알기 어렵습니다.',
+              '휴대폰 미디어 볼륨이 너무 작거나 큰 상태로 진입해도 결과 화면(ResultScreen)에 가서야 볼륨 기준 안내가 나옵니다.'
+            ]
+          },
+          {
+            badge: '최적화 내 이명 찾기 해법',
+            tone: 'emerald',
+            items: [
+              '주파수 표시 + 재생 버튼 + 주파수 대역 바 + 반음 조절 버튼(변경될 Hz 미리보기 포함)을 하나의 Surface 컨트롤 카드로 통합했습니다.',
+              '상단 스텝 표시를 "1 / 3" 텍스트 대신 직관적인 3단계 프로그레스 바로 개선했습니다.',
+              '측정 시작 전 상단 배너에서 이어폰 착용 및 현재 기기 미디어 볼륨 기준값을 즉시 안내합니다.'
+            ]
+          }
+        ],
+        night: [
+          {
+            badge: '현재 수면/야간 사용 시 문제점',
+            tone: 'rose',
+            items: [
+              '이명이 가장 심해지는 시간대는 취침 전 어두운 침실인데, 앱이 밝은 크림/화이트(#F5F1EA / #FFFFFF) 전용이라 눈부심이 심합니다.',
+              '안드로이드 기본 미디어 볼륨(15단계)만 사용하므로 조용한 밤에는 볼륨 1칸(1/15)과 2칸(2/15)의 차이가 너무 커서 혼합점 바로 아래에 맞추기 어렵습니다.'
+            ]
+          },
+          {
+            badge: '야간 모드 & 미세 볼륨 해법',
+            tone: 'emerald',
+            items: [
+              '어두운 침실에서도 눈이 편안한 딥 포레스트 다크 테마(#111B1A 배경 / #1A2826 카드)를 지원합니다.',
+              '기기 볼륨 1칸 사이를 부드럽게 세분화하는 [침실 미세 볼륨(소프트웨어 감쇠)] 슬라이더로 조용한 밤에도 정확한 혼합점 아래 청취가 가능합니다.',
+              '수면 타이머 칩을 화면에서 바로 원탭으로 전환할 수 있습니다.'
+            ]
+          }
+        ]
+      };
+
+      function updateUI() {
+        const beforeEl = document.getElementById('phone-before');
+        const afterEl = document.getElementById('phone-after');
+        const diagEl = document.getElementById('diagnosis-panel');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          const active = btn.dataset.tab === state.tab;
+          btn.className = active
+            ? 'tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#2D5F5D] text-white shadow-sm'
+            : 'tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)]';
+        });
+
+        const cards = DIAGNOSIS_COPY[state.tab];
+        diagEl.innerHTML = cards.map(c => `
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 space-y-2">
+            <div class="text-xs font-bold ${c.tone === 'rose' ? 'text-rose-700' : 'text-emerald-700'}">${c.badge}</div>
+            <ul class="space-y-1.5 text-xs text-[var(--muted-foreground)] list-disc pl-4 leading-relaxed">
+              ${c.items.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('');
+
+        afterEl.classList.toggle('dark-mode', state.tab === 'night');
+        if (state.tab === 'main') {
+          beforeEl.innerHTML = renderMainBefore();
+          afterEl.innerHTML = renderMainAfter();
+        } else if (state.tab === 'records') {
+          beforeEl.innerHTML = renderRecordsBefore();
+          afterEl.innerHTML = renderRecordsAfter();
+        } else if (state.tab === 'finder') {
+          beforeEl.innerHTML = renderFinderBefore();
+          afterEl.innerHTML = renderFinderAfter();
+        } else if (state.tab === 'night') {
+          beforeEl.innerHTML = renderNightBefore();
+          afterEl.innerHTML = renderNightAfter();
+        }
+      }
+
+      document.getElementById('screen-tabs').addEventListener('click', e => {
+        const btn = e.target.closest('[data-tab]');
+        if (!btn) return;
+        state.tab = btn.dataset.tab;
+        updateUI();
+      });
+
+      document.getElementById('phone-after').addEventListener('click', e => {
+        const act = e.target.closest('[data-action]');
+        if (act) {
+          const type = act.dataset.action;
+          if (type === 'toggle-play') state.playing = !state.playing;
+          if (type === 'toggle-notch') state.notchOn = !state.notchOn;
+          if (type === 'goto-records') state.tab = 'records';
+          if (type === 'goto-main') state.tab = 'main';
+          updateUI();
+          return;
+        }
+        const noiseBtn = e.target.closest('[data-noise]');
+        if (noiseBtn) {
+          state.noise = noiseBtn.dataset.noise;
+          updateUI();
+          return;
+        }
+        const natureBtn = e.target.closest('[data-nature]');
+        if (natureBtn) {
+          state.nature = natureBtn.dataset.nature;
+          updateUI();
+        }
+      });
+
+      updateUI();
+    })();
+  </script>
+</body>
+</html>

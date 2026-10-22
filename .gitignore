@@ -1,0 +1,12 @@
+.gradle/
+.kotlin/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.DS_Store
+
+# Earlier nature recordings: licence never recorded, so they are not published (see sounds/README.md).
+sounds/previous/
+__pycache__/
