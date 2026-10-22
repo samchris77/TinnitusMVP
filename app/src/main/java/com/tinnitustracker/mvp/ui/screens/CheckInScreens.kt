@@ -5,15 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import com.tinnitustracker.mvp.data.CheckIn
 import com.tinnitustracker.mvp.ui.CheckInUi
 import com.tinnitustracker.mvp.ui.components.LabeledSlider
-import com.tinnitustracker.mvp.ui.components.MessageToast
 import com.tinnitustracker.mvp.ui.components.PrimaryButton
 import com.tinnitustracker.mvp.ui.components.Readout
 import com.tinnitustracker.mvp.ui.components.StepScaffold
@@ -112,63 +108,68 @@ fun CheckInScreen(ui: CheckInUi, onBack: () -> Unit, onAnswer: (Int) -> Unit, on
     }
 }
 
-/** 내 변화: this week's score, the trend and every check-in. */
+/**
+ * The lower half of 내 기록, as v1.1's 내 변화 had it: this week's score, the trend and every
+ * check-in. It adds its cards straight into the caller's column.
+ */
 @Composable
-fun ProgressScreen(checkIns: List<CheckIn>, message: String?, onBack: () -> Unit, onCheckIn: () -> Unit) {
+internal fun ScoreSection(checkIns: List<CheckIn>, onCheckIn: () -> Unit) {
+    if (checkIns.isEmpty()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .card()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text("아직 체크인이 없어요", style = AppText.BodyStrong)
+            Text("일주일에 한 번, 질문 3개로 이명이 어떻게 달라지는지 기록해요.", style = AppText.Caption, color = Palette.Ink2)
+            Spacer(Modifier.height(12.dp))
+            PrimaryButton("첫 체크인 · 2분", onClick = onCheckIn)
+        }
+        return
+    }
     val today = LocalDate.now()
     val due = CheckIn.isDue(checkIns, today)
-    Box(Modifier.fillMaxSize()) {
-        StepScaffold(title = "내 변화", onBack = onBack) {
-            if (checkIns.isNotEmpty()) ScoreCard(checkIns, due)
-            if (checkIns.size >= 2) {
-                ChartCard(checkIns)
-            } else {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .card()
-                        .padding(16.dp),
-                ) {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .background(Palette.Bg, androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
-                            .padding(horizontal = 16.dp, vertical = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text("두 번 이상 기록하면 변화가 그래프로 보여요", style = AppText.BodyStrong)
-                    }
-                }
-            }
-            if (due) {
-                PrimaryButton("이번 주 체크인 · 2분", onClick = onCheckIn)
-            } else {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .card()
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Filled.Event, contentDescription = null, tint = Palette.Teal, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("다음 체크인 · ${longDate(CheckIn.nextDue(checkIns, today))}", style = AppText.Body)
-                }
-            }
-            if (checkIns.isNotEmpty()) {
-                Text("기록", style = AppText.Label, color = Palette.Ink2, modifier = Modifier.padding(start = 4.dp))
-                History(checkIns)
-            }
-            Text("지난 한 주에 대한 내 느낌을 적은 기록이에요. 진단이 아니에요.", style = AppText.Caption, color = Palette.Ink2)
-        }
-        MessageToast(
-            message,
+    ScoreCard(checkIns, due)
+    if (checkIns.size >= 2) {
+        ChartCard(checkIns)
+    } else {
+        Column(
             Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
-        )
+                .fillMaxWidth()
+                .card()
+                .padding(16.dp),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Palette.Bg, androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("두 번 이상 기록하면 변화가 그래프로 보여요", style = AppText.BodyStrong)
+            }
+        }
     }
+    if (due) {
+        PrimaryButton("이번 주 체크인 · 2분", onClick = onCheckIn)
+    } else {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .card()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Filled.Event, contentDescription = null, tint = Palette.Teal, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("다음 체크인 · ${longDate(CheckIn.nextDue(checkIns, today))}", style = AppText.Body)
+        }
+    }
+    Text("체크인 기록", style = AppText.Label, color = Palette.Ink2, modifier = Modifier.padding(start = 4.dp))
+    History(checkIns)
+    Text("지난 한 주에 대한 내 느낌을 적은 기록이에요. 진단이 아니에요.", style = AppText.Caption, color = Palette.Ink2)
 }
 
 @Composable
@@ -349,5 +350,6 @@ private fun History(checkIns: List<CheckIn>) {
     }
 }
 
-private fun longDate(d: LocalDate): String =
+/** "10월 28일 수요일". */
+internal fun longDate(d: LocalDate): String =
     "${d.monthValue}월 ${d.dayOfMonth}일 ${d.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.KOREAN)}"

@@ -28,7 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tinnitustracker.mvp.ui.screens.CheckInScreen
 import com.tinnitustracker.mvp.ui.screens.FlagsScreen
 import com.tinnitustracker.mvp.ui.screens.MixScreen
-import com.tinnitustracker.mvp.ui.screens.ProgressScreen
+import com.tinnitustracker.mvp.ui.screens.RecordsScreen
 import com.tinnitustracker.mvp.ui.screens.TimerSheet
 import com.tinnitustracker.mvp.ui.screens.InfoSheet
 import com.tinnitustracker.mvp.ui.screens.LoudnessScreen
@@ -46,6 +46,7 @@ fun App(vm: AppViewModel) {
     val playback by vm.playback.collectAsStateWithLifecycle()
     val volume by vm.volume.collectAsStateWithLifecycle()
     val timer by vm.timer.collectAsStateWithLifecycle()
+    val listening by vm.listening.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     BackHandler(enabled = ui.screen != Screen.WELCOME && ui.screen != Screen.MAIN) { vm.back() }
@@ -102,7 +103,7 @@ fun App(vm: AppViewModel) {
                     message = ui.message,
                     onFind = vm::findAgain,
                     onCheckIn = vm::openCheckIn,
-                    onProgress = vm::openProgress,
+                    onRecords = vm::openRecords,
                     onInfo = vm::openInfo,
                     onSound = vm::selectSound,
                     onNotch = vm::toggleNotch,
@@ -125,7 +126,7 @@ fun App(vm: AppViewModel) {
                     onSave = vm::saveMix,
                 )
                 Screen.CHECKIN -> CheckInScreen(ui.checkIn, onBack = { vm.back() }, onAnswer = vm::answerCheckIn, onNext = vm::checkInNext)
-                Screen.PROGRESS -> ProgressScreen(ui.checkIns, ui.message, onBack = { vm.back() }, onCheckIn = vm::openCheckIn)
+                Screen.RECORDS -> RecordsScreen(ui.checkIns, listening, ui.message, onBack = { vm.back() }, onCheckIn = vm::openCheckIn)
             }
         }
         if (ui.infoOpen) InfoSheet(onDismiss = vm::closeInfo, onFlags = vm::openFlags)

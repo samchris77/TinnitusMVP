@@ -32,6 +32,10 @@ object Palette {
     val Warn = Color(0xFFC44536)
     val WarnSoft = Color(0xFFF7DDD8)
     val Shadow = Color(0x291A2E2C)
+    /** Calendar shading by listening time: under 30 minutes, 30 minutes to 2 hours, 2 hours or more. */
+    val Shade1 = Teal.copy(alpha = 0.14f)
+    val Shade2 = Teal.copy(alpha = 0.40f)
+    val Shade3 = Teal
     val Swatches = mapOf("white" to Color(0xFFFFFFFF), "pink" to Color(0xFFEBB7B1), "brown" to Color(0xFF8C664D))
 }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tinnitustracker.mvp.MvpApp
 import com.tinnitustracker.mvp.audio.PlaybackController
 import com.tinnitustracker.mvp.data.CheckIn
+import com.tinnitustracker.mvp.data.ListeningLog
 import com.tinnitustracker.mvp.data.Profile
 import com.tinnitustracker.mvp.data.Sound
 import com.tinnitustracker.mvp.util.Pitch
@@ -15,12 +16,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-enum class Screen { WELCOME, REFERRAL, PITCH, OCTAVE, LOUDNESS, RESULT, MAIN, FLAGS, MIX, CHECKIN, PROGRESS }
+enum class Screen { WELCOME, REFERRAL, PITCH, OCTAVE, LOUDNESS, RESULT, MAIN, FLAGS, MIX, CHECKIN, RECORDS }
 
 /** Sleep-timer choices in minutes; 0 turns it off. */
 val TIMER_CHOICES = listOf(0 to "끄기", 15 to "15분", 30 to "30분", 60 to "1시간", 120 to "2시간")
@@ -83,6 +86,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val ui: StateFlow<UiState> = _ui.asStateFlow()
     val playback: StateFlow<PlaybackController.State> = controller.state
     val timer: StateFlow<PlaybackController.Timer> = controller.timer
+    /** Listening time, saved by the playback controller about once a minute while sound plays. */
+    val listening: StateFlow<List<ListeningLog.Entry>> = app.settings
+        .map { it.listening }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), app.settings.value.listening)
     val volumeMax: Int = app.volume.max
     val volume: StateFlow<Int> = app.volume.levels.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), app.volume.current())
 
@@ -137,7 +145,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 s.checkIn.returnTo
             }
-            Screen.PROGRESS -> Screen.MAIN
+            Screen.RECORDS -> Screen.MAIN
             Screen.WELCOME, Screen.MAIN -> return false
         }
         go(target)
@@ -330,11 +338,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val entry = CheckIn(LocalDate.now(), c.answers[0]!!, c.answers[1]!!, c.answers[2]!!)
         viewModelScope.launch { app.prefs.addCheckIn(entry) }
         _ui.update { it.copy(checkIns = CheckIn.add(it.checkIns, entry)) }
-        go(Screen.PROGRESS)
+        go(Screen.RECORDS)
         showMessage("이번 주 기록했어요")
     }
 
-    fun openProgress() = go(Screen.PROGRESS)
+    fun openRecords() = go(Screen.RECORDS)
 
     // ── Sleep timer ──────────────────────────────────────────────────────────
 

@@ -83,7 +83,7 @@ fun MainScreen(
     message: String?,
     onFind: () -> Unit,
     onCheckIn: () -> Unit,
-    onProgress: () -> Unit,
+    onRecords: () -> Unit,
     onInfo: () -> Unit,
     onSound: (Sound) -> Unit,
     onNotch: () -> Unit,
@@ -99,7 +99,7 @@ fun MainScreen(
                     .weight(1f)
                     .statusBarsPadding(),
             ) {
-                AppBar(title = "이명 사운드", large = true, onInfo = onInfo)
+                AppBar(title = "이명 사운드", large = true, onRecords = onRecords, onInfo = onInfo)
                 Column(
                     Modifier
                         .weight(1f)
@@ -108,7 +108,7 @@ fun MainScreen(
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
-                    MyTinnitus(profile, checkIns, onFind, onCheckIn, onProgress)
+                    MyTinnitus(profile, checkIns, onFind, onCheckIn, onRecords)
                     SoundPicker(selected = playback.sound, onSound = onSound)
                     val hz = profile?.hz
                     SwitchRow(
@@ -152,7 +152,7 @@ private fun MyTinnitus(
     checkIns: List<CheckIn>,
     onFind: () -> Unit,
     onCheckIn: () -> Unit,
-    onProgress: () -> Unit,
+    onRecords: () -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().card()) {
         Row(
@@ -174,19 +174,19 @@ private fun MyTinnitus(
             if (profile == null) SmallPrimaryButton("찾기", onClick = onFind) else InlineAction("다시 찾기", onClick = onFind)
         }
         HorizontalDivider(color = Palette.Line)
-        CheckInRow(checkIns, onCheckIn, onProgress)
+        CheckInRow(checkIns, onCheckIn, onRecords)
     }
 }
 
-/** This week's check-in when it is due, otherwise the latest score and a way into 내 변화. */
+/** This week's check-in when it is due, otherwise the latest score and a way into 내 기록. */
 @Composable
-private fun CheckInRow(checkIns: List<CheckIn>, onCheckIn: () -> Unit, onProgress: () -> Unit) {
+private fun CheckInRow(checkIns: List<CheckIn>, onCheckIn: () -> Unit, onRecords: () -> Unit) {
     val due = CheckIn.isDue(checkIns, LocalDate.now())
     Row(
         Modifier
             .fillMaxWidth()
             .heightIn(min = 64.dp)
-            .clickable(role = Role.Button, onClick = if (due) onCheckIn else onProgress)
+            .clickable(role = Role.Button, onClick = if (due) onCheckIn else onRecords)
             .padding(start = 16.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -210,7 +210,7 @@ private fun CheckInRow(checkIns: List<CheckIn>, onCheckIn: () -> Unit, onProgres
                 )
             }
         }
-        if (!due) Text("내 변화", style = AppText.Label, color = Palette.Teal)
+        if (!due) Text("내 기록", style = AppText.Label, color = Palette.Teal)
         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Palette.Muted)
     }
 }
@@ -254,7 +254,8 @@ private fun TileRow(sounds: List<Sound>, selected: Sound, onSound: (Sound) -> Un
     }
 }
 
-private fun Sound.icon(): ImageVector? = when (this) {
+/** Nature sounds have an icon; noise tiles and rows show a colour swatch instead. Also used by the day sheet. */
+internal fun Sound.icon(): ImageVector? = when (this) {
     Sound.RAIN -> Icons.Filled.Umbrella
     Sound.WAVES -> Icons.Filled.Waves
     Sound.BROOK -> Icons.Filled.WaterDrop

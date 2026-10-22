@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
+import com.tinnitustracker.mvp.data.ListeningLog
 import com.tinnitustracker.mvp.data.Prefs
 import com.tinnitustracker.mvp.data.Settings
 import com.tinnitustracker.mvp.data.Sound
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * The one place that plays sound. It owns the engine, audio focus, the headphone-unplug
@@ -112,6 +115,7 @@ class PlaybackController(
         engine.wake()
         watchUnplug(true)
         _state.value = s.copy(playing = true, interrupted = false)
+        startCounting()
         if (!serviceRunning) PlaybackService.start(context)
         return true
     }
@@ -130,12 +134,14 @@ class PlaybackController(
     }
 
     fun select(sound: Sound) {
+        accrue()   // the time so far belongs to the sound that was playing
         _state.update { it.copy(sound = sound) }
         if (_state.value.playing) engine.select(sound) else engine.prefetch(sound)
         scope.launch { prefs.setSound(sound) }
     }
 
     fun setNotch(on: Boolean) {
+        accrue()
         _state.update { it.copy(notchOn = on) }
         applyNotch()
         scope.launch { prefs.setNotch(on) }
@@ -143,6 +149,7 @@ class PlaybackController(
 
     /** A new measurement: the notch follows the new pitch and turns on when there is one. The caller saves it. */
     fun setMeasuredPitch(hz: Float?) {
+        accrue()
         _state.update { it.copy(notchHz = hz, notchOn = hz != null) }
         applyNotch()
     }
@@ -190,6 +197,77 @@ class PlaybackController(
         fading = false
     }
 
+    // ── Listening record ─────────────────────────────────────────────────────
+    //
+    // A session runs from play to pause. A call or another app only interrupts it; it goes on
+    // when the sound comes back. Time is kept per sound and notch setting and written every
+    // minute, so a killed app loses at most a minute. Nothing is written until the session has
+    // played a minute, so an accidental tap never shows up. The finder's tones never count.
+
+    private var sessionDay: LocalDate? = null
+    private var sessionMs = 0L
+    /** When the current stretch of playing started (elapsedRealtime), or 0 when not counting. */
+    private var countingSince = 0L
+    private val unsavedMs = LinkedHashMap<Pair<String, Boolean>, Long>()
+    private var recordJob: Job? = null
+
+    private fun startCounting() {
+        if (countingSince != 0L) return
+        if (sessionDay == null) {
+            sessionDay = ListeningLog.sessionDay(LocalDateTime.now())
+            sessionMs = 0
+        }
+        countingSince = SystemClock.elapsedRealtime()
+        recordJob?.cancel()
+        recordJob = scope.launch {
+            while (true) {
+                delay(RECORD_EVERY_MS)
+                accrue()
+                save()
+            }
+        }
+    }
+
+    /** Adds the time since the last call to the sound and notch setting that were playing. */
+    private fun accrue() {
+        if (countingSince == 0L) return
+        val now = SystemClock.elapsedRealtime()
+        val ms = now - countingSince
+        countingSince = now
+        sessionMs += ms
+        val s = _state.value
+        val key = s.sound.id to s.notchActive
+        unsavedMs[key] = (unsavedMs[key] ?: 0L) + ms
+    }
+
+    /** Stops counting and saves. [endSession] also closes the session, dropping it if it was under a minute. */
+    private fun stopCounting(endSession: Boolean) {
+        accrue()
+        countingSince = 0L
+        recordJob?.cancel()
+        recordJob = null
+        save()
+        if (endSession) {
+            sessionDay = null
+            sessionMs = 0
+            unsavedMs.clear()
+        }
+    }
+
+    /** Writes the whole seconds not yet saved; the leftover milliseconds wait for the next save. */
+    private fun save() {
+        val day = sessionDay ?: return
+        if (sessionMs < ListeningLog.MIN_SESSION_SECONDS * 1000L) return
+        val entries = ArrayList<ListeningLog.Entry>()
+        for (e in unsavedMs.entries) {
+            val seconds = (e.value / 1000).toInt()
+            if (seconds <= 0) continue
+            entries += ListeningLog.Entry(day, e.key.first, e.key.second, seconds)
+            e.setValue(e.value - seconds * 1000L)
+        }
+        if (entries.isNotEmpty()) scope.launch { prefs.addListening(entries) }
+    }
+
     // ── Finder probe ─────────────────────────────────────────────────────────
 
     fun probeTone(hz: Float, level: Float) {
@@ -224,6 +302,7 @@ class PlaybackController(
     // ── Internals ────────────────────────────────────────────────────────────
 
     private fun silence(interrupted: Boolean) {
+        stopCounting(endSession = !interrupted)
         mixer.therapyOn = false
         watchUnplug(false)
         _state.update { it.copy(playing = false, interrupted = interrupted) }
@@ -269,6 +348,7 @@ class PlaybackController(
                 engine.wake()
                 watchUnplug(true)
                 _state.update { it.copy(playing = true, interrupted = false) }
+                startCounting()
             }
         }
     }
@@ -282,6 +362,7 @@ class PlaybackController(
     private companion object {
         const val TIMER_TICK_MS = 1_000L
         const val TIMER_FADE_MS = 30_000L
+        const val RECORD_EVERY_MS = 60_000L
     }
 
     private fun watchUnplug(on: Boolean) {

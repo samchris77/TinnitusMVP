@@ -44,6 +44,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
@@ -371,6 +372,7 @@ fun AppBar(
     onBack: (() -> Unit)? = null,
     step: String? = null,
     large: Boolean = false,
+    onRecords: (() -> Unit)? = null,
     onInfo: (() -> Unit)? = null,
 ) {
     Row(
@@ -395,6 +397,11 @@ fun AppBar(
                 .padding(start = if (onBack == null) 12.dp else 4.dp),
         )
         if (step != null) Text(step, style = AppText.Caption, color = Palette.Ink2, modifier = Modifier.padding(end = 16.dp))
+        if (onRecords != null) {
+            IconButton(onClick = onRecords) {
+                Icon(Icons.Filled.CalendarMonth, contentDescription = "내 기록", tint = Palette.Ink2)
+            }
+        }
         if (onInfo != null) {
             IconButton(onClick = onInfo) {
                 Icon(Icons.Filled.Info, contentDescription = "앱 정보", tint = Palette.Ink2)

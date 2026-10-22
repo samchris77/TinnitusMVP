@@ -29,6 +29,7 @@ data class Settings(
     /** Media-volume step where the sound starts to blend with the tinnitus. */
     val mixingPoint: Int? = null,
     val checkIns: List<CheckIn> = emptyList(),
+    val listening: List<ListeningLog.Entry> = emptyList(),
 )
 
 /** Everything the app remembers, in one small DataStore file on the phone. */
@@ -45,6 +46,7 @@ class Prefs(context: Context) {
         val NOTCH = booleanPreferencesKey("notch_on")
         val MIX = intPreferencesKey("mixing_point_level")
         val CHECKINS = stringPreferencesKey("checkins")
+        val LISTENING = stringPreferencesKey("listening")
     }
 
     val settings: Flow<Settings> = store.data
@@ -63,6 +65,7 @@ class Prefs(context: Context) {
                 notchOn = p[Keys.NOTCH] ?: false,
                 mixingPoint = p[Keys.MIX],
                 checkIns = CheckIn.decode(p[Keys.CHECKINS]),
+                listening = ListeningLog.decode(p[Keys.LISTENING]),
             )
         }
 
@@ -72,6 +75,14 @@ class Prefs(context: Context) {
 
     suspend fun addCheckIn(entry: CheckIn) {
         store.edit { it[Keys.CHECKINS] = CheckIn.encode(CheckIn.add(CheckIn.decode(it[Keys.CHECKINS]), entry)) }
+    }
+
+    /** Adds listening time; each entry merges into the one with the same day, sound and notch setting. */
+    suspend fun addListening(entries: List<ListeningLog.Entry>) {
+        if (entries.isEmpty()) return
+        store.edit {
+            it[Keys.LISTENING] = ListeningLog.encode(entries.fold(ListeningLog.decode(it[Keys.LISTENING]), ListeningLog::add))
+        }
     }
 
     suspend fun setOnboarded() {
